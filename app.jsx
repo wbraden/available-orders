@@ -128,7 +128,16 @@ const STORES = [
   { name: 'Cub Foods',       brand: 'cub',    lat: 44.9583, lng: -93.2477, demand: 0.7, address: '2850 26th Ave S',  hours: [{ days: 'Every day', time: '6am – 11pm' }] },
   { name: 'Lunds & Byerlys', brand: 'lunds',  lat: 44.9899, lng: -93.2530, demand: 1.1, address: '13 W Franklin Ave',hours: [{ days: 'Every day', time: '6am – 11pm' }] },
   { name: 'Trader Joe\'s',   brand: 'tj',     lat: 44.9483, lng: -93.3163, demand: 1.0, address: '3930 W 50th St',   hours: [{ days: 'Every day', time: '8am – 9pm' }] },
-  { name: 'Aldi',            brand: 'aldi',   lat: 44.9314, lng: -93.2785, demand: 0.6, address: '10 E Franklin Ave', hours: [{ days: 'Mon–Sat', time: '9am – 8pm' }, { days: 'Sun', time: '10am – 7pm' }] },
+  { name: 'Aldi',            brand: 'aldi',   lat: 44.9314, lng: -93.2785, demand: 0.2, address: '10 E Franklin Ave', hours: [{ days: 'Mon–Sat', time: '9am – 8pm' }, { days: 'Sun', time: '10am – 7pm' }] },
+  { name: 'Kowalski\'s',     brand: 'lunds',  lat: 44.9356, lng: -93.2728, demand: 1.0, address: '2440 Hennepin Ave', hours: [{ days: 'Every day', time: '7am – 10pm' }] },
+  { name: 'Fresh Thyme',     brand: 'wfm',    lat: 44.9729, lng: -93.2432, demand: 0.85, address: '1113 W Broadway Ave', hours: [{ days: 'Every day', time: '7am – 10pm' }] },
+  { name: 'Hy-Vee',          brand: 'cub',    lat: 44.8547, lng: -93.2421, demand: 0.75, address: '7701 Nicollet Ave', hours: [{ days: 'Every day', time: '6am – 11pm' }] },
+  { name: 'Aldi',            brand: 'aldi',   lat: 44.9559, lng: -93.2098, demand: 0.45, address: '1500 E Lake St', hours: [{ days: 'Mon–Sat', time: '9am – 8pm' }, { days: 'Sun', time: '10am – 7pm' }] },
+  { name: 'Cub Foods',       brand: 'cub',    lat: 44.9778, lng: -93.2650, demand: 0.95, address: '1104 Lagoon Ave', hours: [{ days: 'Every day', time: '6am – 11pm' }] },
+  { name: 'Lunds & Byerlys', brand: 'lunds',  lat: 44.9052, lng: -93.3390, demand: 1.05, address: '50th & France', hours: [{ days: 'Every day', time: '6am – 11pm' }] },
+  { name: 'Target',          brand: 'target', lat: 44.9890, lng: -93.2714, demand: 0.9, address: '900 Nicollet Mall', hours: [{ days: 'Mon–Sat', time: '8am – 10pm' }, { days: 'Sun', time: '9am – 9pm' }] },
+  { name: 'Trader Joe\'s',   brand: 'tj',     lat: 44.9322, lng: -93.2895, demand: 0.88, address: '1500 W 66th St', hours: [{ days: 'Every day', time: '8am – 9pm' }] },
+  { name: 'Wedge Co-op',     brand: 'wfm',    lat: 44.9471, lng: -93.2861, demand: 0.6, address: '2105 Lyndale Ave S', hours: [{ days: 'Every day', time: '7am – 10pm' }] },
 ];
 
 const BRAND_COLORS = {
@@ -152,11 +161,42 @@ function haversineKm(aLat, aLng, bLat, bLng) {
 }
 
 // color from gradient based on demand norm (0..1) and online state
+const BLUYI = ['#f7feae', '#b7e6a5', '#7ccba2', '#46aea0', '#089099', '#00718b', '#045275'];
+
+function hexToRgb(hex) {
+  const value = hex.replace('#', '');
+  const parts = value.length === 3
+    ? value.split('').map(ch => parseInt(ch + ch, 16))
+    : [0, 2, 4].map(i => parseInt(value.slice(i, i + 2), 16));
+  return parts;
+}
+
+function rgbToHex([r, g, b]) {
+  return `#${[r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function interpolateGradient(colors, t) {
+  const clamped = Math.max(0, Math.min(1, t));
+  const scaled = clamped * (colors.length - 1);
+  const idx = Math.floor(scaled);
+  const localT = scaled - idx;
+  if (idx >= colors.length - 1) return colors[colors.length - 1];
+  const start = hexToRgb(colors[idx]);
+  const end = hexToRgb(colors[idx + 1]);
+  return rgbToHex([
+    Math.round(lerp(start[0], end[0], localT)),
+    Math.round(lerp(start[1], end[1], localT)),
+    Math.round(lerp(start[2], end[2], localT)),
+  ]);
+}
+
 function demandColor(norm, online) {
   if (!online) return 'rgb(120,124,138)';
-  return norm > 0.65 ? '#d64545'   // red — hottest
-       : norm > 0.40 ? '#e8923b'   // orange — medium
-       :               '#f1d97e';  // light yellow — low
+  return interpolateGradient(BLUYI, norm);
 }
 
 // SVG shopping basket icon (simple, clean)
@@ -240,6 +280,10 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
       // and don't pop in as you pan
       renderer: L.svg({ padding: 3 }),
     });
+    m.createPane('hexPane');
+    m.getPane('hexPane').style.zIndex = '350';
+    m.createPane('labelPane');
+    m.getPane('labelPane').style.zIndex = '650';
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       subdomains: 'abcd',
       maxZoom: 19,
@@ -251,15 +295,16 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
     // ──────────────────────────────────────────
     if (h3 && typeof h3.latLngToCell === 'function') {
       const RES = 9;
-      const RING = 6;
+      const demandLayer = L.layerGroup().addTo(m);
+      const demandPerCell = new Map();
       const cellSet = new Set();
+      const RING = 6;
       STORES.forEach(s => {
         const cell = h3.latLngToCell(s.lat, s.lng, RES);
         const ring = h3.gridDisk(cell, RING);
         ring.forEach(c => cellSet.add(c));
       });
 
-      const demandPerCell = new Map();
       let maxDemand = 0;
       cellSet.forEach(cell => {
         const [lat, lng] = h3.cellToLatLng(cell);
@@ -272,17 +317,16 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
         if (d > maxDemand) maxDemand = d;
       });
 
-      const demandLayer = L.layerGroup().addTo(m);
       const polys = [];
       cellSet.forEach(cell => {
         const boundary = h3.cellToBoundary(cell);
         const d = demandPerCell.get(cell);
         const norm = d / maxDemand;
-        if (norm < 0.18) return;
         const polygon = L.polygon(boundary, {
           weight: 0,
           opacity: 0,
           interactive: false,
+          pane: 'hexPane',
         }).addTo(demandLayer);
         polys.push({ polygon, norm });
       });
@@ -308,6 +352,7 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
           icon: buildStoreIcon(s, norm, online),
           title: s.name,
           interactive: true,
+          pane: 'labelPane',
         }).addTo(m);
         marker.on('click', () => onStoreTapRef.current?.(s));
         storeMarkersRef.current.push({ marker, norm, name: s.name, store: s });
@@ -358,35 +403,32 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
 
   // Update hex demand visualization when online state changes
   useEffect(() => {
-    hexLayersRef.current.forEach(({ polygon, norm }) => {
-      // enable CSS transition on the SVG path before updating fill
-      if (polygon._path) {
-        polygon._path.style.transition = 'fill 0.9s ease, fill-opacity 0.9s ease';
-      }
-      if (online) {
-        const color = norm > 0.65 ? '#d64545'
-                    : norm > 0.40 ? '#e8923b'
-                    :               '#f1d97e';
-        polygon.setStyle({
-          color: color, weight: 0, opacity: 0,
-          fillColor: color,
-          fillOpacity: 0.55 + norm * 0.35,
-        });
-      } else {
-        if (norm < 0.18) {
-          polygon.setStyle({ opacity: 0, fillOpacity: 0 });
-        } else {
-          const color = norm > 0.65 ? '#d64545'
-                      : norm > 0.40 ? '#e8923b'
-                      :               '#f1d97e';
-          polygon.setStyle({
-            color, weight: 0, opacity: 0,
-            fillColor: color,
-            fillOpacity: 0.13 + norm * 0.08,
-          });
+      hexLayersRef.current.forEach(({ polygon, norm }) => {
+        // enable CSS transition on the SVG path before updating fill
+        if (polygon._path) {
+          polygon._path.style.transition = 'fill 0.9s ease, fill-opacity 0.9s ease';
+          polygon._path.style.mixBlendMode = 'multiply';
         }
-      }
-    });
+        if (online) {
+          const color = demandColor(norm, online);
+          polygon.setStyle({
+            color: color, weight: 0, opacity: 0,
+            fillColor: color,
+            fillOpacity: 0.18 + Math.pow(norm, 1.15) * 0.34,
+          });
+        } else {
+          if (norm < 0.18) {
+            polygon.setStyle({ opacity: 0, fillOpacity: 0 });
+          } else {
+            const color = demandColor(norm, online);
+            polygon.setStyle({
+              color, weight: 0, opacity: 0,
+              fillColor: color,
+              fillOpacity: 0.06 + Math.pow(norm, 1.15) * 0.08,
+            });
+          }
+        }
+      });
 
     // Update store marker icons to match online/offline color
     storeMarkersRef.current.forEach(({ marker, norm, store }) => {
@@ -608,10 +650,12 @@ function TierRow({ onClick }) {
 // ─────────────────────────────────────────────────────────────
 // Bottom sheet — draggable with snap points
 // ─────────────────────────────────────────────────────────────
-function BottomSheet({ snapIndex, setSnapIndex, snaps, children, onTopChange }) {
+function BottomSheet({ snapIndex, setSnapIndex, snaps, children, onTopChange, showMapCta = false }) {
   const sheetRef = useRef(null);
   const scrollRef = useRef(null);
   const dragRef = useRef(null);
+  const scrollDragRef = useRef(null);
+  const scrollMomentumRef = useRef(null);
   const liveTopRef = useRef(snaps[snapIndex]);
   const [isDragging, setIsDragging] = useState(false);
   const [liveTop, setLiveTopState] = useState(snaps[snapIndex]);
@@ -633,6 +677,10 @@ function BottomSheet({ snapIndex, setSnapIndex, snaps, children, onTopChange }) 
   // Notify parent on every live position update
   useEffect(() => { onTopChange && onTopChange(liveTop); }, [liveTop, onTopChange]);
 
+  useEffect(() => () => {
+    if (scrollMomentumRef.current) cancelAnimationFrame(scrollMomentumRef.current);
+  }, []);
+
   const setTop = (top) => {
     liveTopRef.current = top;
     if (sheetRef.current) sheetRef.current.style.top = top + 'px';
@@ -640,9 +688,39 @@ function BottomSheet({ snapIndex, setSnapIndex, snaps, children, onTopChange }) 
     setLiveTopState(top);
   };
 
+  const startScrollMomentum = useCallback((initialVelocity) => {
+    const scroller = scrollRef.current;
+    if (!scroller || Math.abs(initialVelocity) < 0.04) return;
+
+    if (scrollMomentumRef.current) cancelAnimationFrame(scrollMomentumRef.current);
+
+    let velocity = initialVelocity;
+    let lastTs = performance.now();
+
+    const step = (ts) => {
+      const el = scrollRef.current;
+      if (!el) {
+        scrollMomentumRef.current = null;
+        return;
+      }
+      const dt = Math.min(32, ts - lastTs);
+      lastTs = ts;
+      el.scrollTop = Math.max(0, el.scrollTop - velocity * dt);
+      velocity *= 0.95;
+      if (Math.abs(velocity) < 0.005) {
+        scrollMomentumRef.current = null;
+        return;
+      }
+      scrollMomentumRef.current = requestAnimationFrame(step);
+    };
+
+    scrollMomentumRef.current = requestAnimationFrame(step);
+  }, []);
+
   const onPointerDown = (e) => {
     const target = e.target;
     if (target.closest && target.closest('button, a, input, [data-no-drag]')) return;
+    if (fsProgress > 0.95 && scrollRef.current && scrollRef.current.contains(target)) return;
     if (scrollRef.current && scrollRef.current.scrollTop > 0) {
       const minTop = snaps[0];
       const distFromTop = Math.max(0, liveTop - minTop);
@@ -721,6 +799,105 @@ function BottomSheet({ snapIndex, setSnapIndex, snaps, children, onTopChange }) 
     window.addEventListener('mouseup',   onUp);
   };
 
+  const onScrollPointerDown = (e) => {
+    const target = e.target;
+    if (target.closest && target.closest('button, a, input, [data-no-drag]')) return;
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    if (!scrollRef.current) return;
+    if (fsProgress <= 0.95) return;
+
+    e.stopPropagation();
+    e.preventDefault();
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+
+    const startY = e.clientY;
+    const startScrollTop = scrollRef.current.scrollTop;
+    const startTop = liveTopRef.current;
+    let draggingSheet = false;
+    let scale = 1;
+    let el = sheetRef.current;
+    while (el && el !== document.body) {
+      const t = getComputedStyle(el).transform;
+      if (t && t !== 'none') {
+        const m = t.match(/matrix\(([^)]+)\)/);
+        if (m) {
+          const parts = m[1].split(',').map(parseFloat);
+          if (parts[0]) { scale = parts[0]; break; }
+        }
+      }
+      el = el.parentElement;
+    }
+
+    scrollDragRef.current = {
+      startY,
+      startScrollTop,
+      startTop,
+      scale,
+      lastY: startY,
+      lastT: performance.now(),
+      vy: 0,
+    };
+
+    const onMove = (ev) => {
+      if (!scrollDragRef.current) return;
+      const d = scrollDragRef.current;
+      const y = ev.clientY;
+      const delta = (y - d.startY) / d.scale;
+      const now = performance.now();
+      const dt = now - d.lastT;
+      if (dt > 0) d.vy = (y - d.lastY) / d.scale / dt;
+      d.lastY = y;
+      d.lastT = now;
+
+      const scroller = scrollRef.current;
+      if (!scroller) return;
+
+      if (!draggingSheet) {
+        const nextScrollTop = d.startScrollTop - delta;
+        if (d.startScrollTop <= 0 && delta > 6) {
+          draggingSheet = true;
+        } else {
+          scroller.scrollTop = Math.max(0, nextScrollTop);
+          if (ev.cancelable) ev.preventDefault();
+          return;
+        }
+      }
+
+      let next = d.startTop + delta;
+      next = Math.max(snaps[0], Math.min(snaps[snaps.length - 1], next));
+      setTop(next);
+      if (ev.cancelable) ev.preventDefault();
+    };
+
+    const onUp = () => {
+      if (draggingSheet && scrollDragRef.current) {
+        const finalTop = liveTopRef.current;
+        const projected = finalTop + scrollDragRef.current.vy * 120;
+        let nearest = 0; let nd = Infinity;
+        snaps.forEach((s, i) => {
+          const dist = Math.abs(projected - s);
+          if (dist < nd) { nd = dist; nearest = i; }
+        });
+        setSnapIndex(nearest);
+        setLiveTop(snaps[nearest]);
+      } else if (scrollDragRef.current) {
+        startScrollMomentum(scrollDragRef.current.vy);
+      }
+      scrollDragRef.current = null;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+
+    window.addEventListener('pointermove', onMove, { passive: false });
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  };
+
   // morph corners and shadow at fullscreen
   const minTop = snaps[0];
   const distFromTop = Math.max(0, liveTop - minTop);
@@ -728,10 +905,10 @@ function BottomSheet({ snapIndex, setSnapIndex, snaps, children, onTopChange }) 
   const radius = 16 * (1 - fsProgress);
 
   return (
-    <div
-      ref={sheetRef}
-      onPointerDown={onPointerDown}
-      style={{
+      <div
+        ref={sheetRef}
+        onPointerDown={onPointerDown}
+        style={{
         position: 'absolute', left: 0, right: 0,
         top: liveTop, bottom: 0,
         background: C.surface,
@@ -741,14 +918,15 @@ function BottomSheet({ snapIndex, setSnapIndex, snaps, children, onTopChange }) 
         display: 'flex', flexDirection: 'column',
         zIndex: 20,
         pointerEvents: 'auto',
-        touchAction: 'none',
+        touchAction: fsProgress > 0.95 ? 'pan-y' : 'none',
         cursor: isDragging ? 'grabbing' : 'grab',
         willChange: 'top',
-      }}
-    >
+        }}
+      >
       {/* drag handle — visual indicator (whole sheet is draggable) */}
       <div
         style={{
+          position: 'relative',
           height: fsProgress > 0.5 ? 26 : 32,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0, pointerEvents: 'none', userSelect: 'none',
@@ -759,7 +937,17 @@ function BottomSheet({ snapIndex, setSnapIndex, snaps, children, onTopChange }) 
           opacity: 1 - fsProgress * 0.4,
         }} />
       </div>
-      <div ref={scrollRef} style={{ flex: 1, overflowY: fsProgress > 0.95 ? 'auto' : 'hidden', overscrollBehavior: 'contain' }}>
+      <div
+        ref={scrollRef}
+        onPointerDown={fsProgress > 0.95 ? onScrollPointerDown : undefined}
+        style={{
+          flex: 1,
+          overflowY: fsProgress > 0.95 ? 'auto' : 'hidden',
+          overscrollBehavior: 'contain',
+          touchAction: fsProgress > 0.95 ? 'pan-y' : 'none',
+          paddingBottom: showMapCta ? 96 : 0,
+        }}
+      >
         {children}
       </div>
     </div>
@@ -1141,40 +1329,62 @@ function BusyTimesChart() {
 // ─────────────────────────────────────────────────────────────
 const ORDERS = [
   {
+    id: 4,
+    store: 'Target',
+    storeBrand: 'target',
+    neighborhood: 'Northeast Minneapolis',
+    address: '900 W Broadway Ave',
+    items: 25,
+    pay: 16.05,
+    tip: 8.00,
+    distance: 3,
+    window: 'Deliver 10 am–11 am',
+    estMins: 50,
+    promoText: null,
+    exclusive: true,
+  },
+  {
     id: 1,
     store: 'Lunds & Byerlys',
     storeBrand: 'lunds',
+    neighborhood: 'Northeast Minneapolis',
     address: '1450 W Lake St',
     items: 14,
-    pay: 18.50,
-    tip: 4.00,
-    distance: 1.2,
-    window: '4:00 – 5:00pm',
-    tags: ['Promo', 'Batch'],
+    pay: 16.05,
+    tip: 0,
+    distance: 3,
+    window: 'Deliver 10 am–11 am',
+    estMins: 50,
+    promoText: null,
+    tagPill: 'ID scan',
   },
   {
     id: 2,
     store: 'Target',
     storeBrand: 'target',
+    neighborhood: 'Northeast Minneapolis',
     address: '900 W Broadway Ave',
-    items: 8,
-    pay: 12.75,
-    tip: 2.50,
-    distance: 2.4,
-    window: '4:30 – 5:30pm',
-    tags: [],
+    items: 25,
+    pay: 16.05,
+    tip: 8,
+    distance: 3,
+    window: 'Deliver 10 am–11 am',
+    estMins: 50,
+    promoText: '✨ Promo pay included',
   },
   {
     id: 3,
     store: 'Whole Foods',
     storeBrand: 'wfm',
+    neighborhood: 'Northeast Minneapolis',
     address: '222 Hennepin Ave E',
-    items: 21,
-    pay: 24.00,
+    items: 14,
+    pay: 16.05,
     tip: 6.00,
-    distance: 0.8,
-    window: '5:00 – 6:00pm',
-    tags: ['Promo'],
+    distance: 3,
+    window: 'Deliver 10 am–11 am',
+    estMins: 50,
+    promoText: '✨ plus $2 for on-time delivery',
   },
 ];
 
@@ -1182,59 +1392,102 @@ const STORE_INITIALS = { target: 'T', lunds: 'L&B', wfm: 'WF', cub: 'CF', tj: 'T
 
 function OrderCard({ order }) {
   const color = BRAND_COLORS[order.storeBrand] || C.ink;
-  const total = (order.pay + order.tip).toFixed(2);
+  const total = order.pay.toFixed(2);
+  const [exclusiveSeconds, setExclusiveSeconds] = useState(order.exclusive ? 60 : 0);
+  const tipText = order.tip > 0
+    ? `plus $${Number.isInteger(order.tip) ? order.tip.toFixed(0) : order.tip.toFixed(2)} est tip`
+    : null;
+  useEffect(() => {
+    if (!order.exclusive || exclusiveSeconds <= 0) return;
+
+    const timer = window.setInterval(() => {
+      setExclusiveSeconds((seconds) => {
+        if (seconds <= 1) {
+          window.clearInterval(timer);
+          return 0;
+        }
+        return seconds - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [order.exclusive, exclusiveSeconds]);
+  const targetLogo = (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="19.9987" cy="19.9987" r="19.9987" fill="white" />
+      <mask id="mask0_1_3274" style={{ maskType: 'alpha' }} maskUnits="userSpaceOnUse" x="2" y="2" width="36" height="36">
+        <circle cx="19.9987" cy="19.9972" r="17.2211" fill="#C4C4C4" stroke="white" strokeWidth="1.11104" />
+      </mask>
+      <g mask="url(#mask0_1_3274)" />
+      <g clipPath="url(#clip0_1_3274)">
+        <circle cx="19.9985" cy="19.9987" r="17.7778" fill="white" />
+        <path d="M19.998 2.22095C29.8163 2.22095 37.7761 10.1801 37.7764 19.9983C37.7764 29.8167 29.8164 37.7766 19.998 37.7766C10.1799 37.7764 2.2207 29.8165 2.2207 19.9983C2.22094 10.1802 10.18 2.22118 19.998 2.22095ZM19.998 8.14673C13.4528 8.14695 8.14672 13.453 8.14648 19.9983C8.14648 26.5437 13.4526 31.8506 19.998 31.8508C26.5436 31.8508 31.8506 26.5439 31.8506 19.9983C31.8503 13.4529 26.5435 8.14673 19.998 8.14673Z" fill="#CB2026" />
+        <path d="M20.2383 25.9021C23.5111 25.9021 26.1643 23.2489 26.1643 19.9761C26.1643 16.7033 23.5111 14.0502 20.2383 14.0502C16.9655 14.0502 14.3124 16.7033 14.3124 19.9761C14.3124 23.2489 16.9655 25.9021 20.2383 25.9021Z" fill="#CB2026" />
+        <path fillRule="evenodd" clipRule="evenodd" d="M19.9985 37.5225C29.6766 37.5225 37.5223 29.6769 37.5223 19.9987C37.5223 10.3206 29.6766 2.47492 19.9985 2.47492C10.3203 2.47492 2.47467 10.3206 2.47467 19.9987C2.47467 29.6769 10.3203 37.5225 19.9985 37.5225ZM19.9985 37.7765C29.8169 37.7765 37.7763 29.8171 37.7763 19.9987C37.7763 10.1803 29.8169 2.22095 19.9985 2.22095C10.1801 2.22095 2.2207 10.1803 2.2207 19.9987C2.2207 29.8171 10.1801 37.7765 19.9985 37.7765Z" fill="#9A949E" />
+      </g>
+      <defs>
+        <clipPath id="clip0_1_3274">
+          <rect x="2.2207" y="2.22095" width="35.5556" height="35.5556" rx="17.7778" fill="white" />
+        </clipPath>
+      </defs>
+    </svg>
+  );
 
   return (
     <div style={{
       margin: '0 16px 12px',
       background: C.surface,
-      border: `1px solid ${C.hairline}`,
       borderRadius: 16,
       overflow: 'hidden',
-      boxShadow: '0 1px 4px rgba(24,12,32,0.07)',
+      boxShadow: '0 2px 6px rgba(24,12,32,0.15)',
       fontFamily: FONT,
     }}>
-      {/* header row */}
-      <div style={{ display: 'flex', alignItems: 'center', padding: '14px 14px 10px', gap: 12 }}>
+      {order.exclusive && exclusiveSeconds > 0 && (
         <div style={{
-          width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-          background: color, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#fff', fontSize: 11, fontWeight: 700, letterSpacing: 0.2,
-        }}>{STORE_INITIALS[order.storeBrand] || order.store[0]}</div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: C.ink, lineHeight: '20px' }}>{order.store}</div>
-          <div style={{ fontSize: 12, color: C.inkMuted, lineHeight: '16px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{order.address}</div>
-        </div>
-        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ fontSize: 17, fontWeight: 700, color: C.ink, lineHeight: '22px' }}>${total}</div>
-          <div style={{ fontSize: 11, color: C.inkSubtle, lineHeight: '14px' }}>est. total</div>
-        </div>
-      </div>
-
-      {/* divider */}
-      <div style={{ height: 1, background: C.hairline, margin: '0 14px' }} />
-
-      {/* detail row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: order.tags.length > 0 ? '10px 14px 4px' : '10px 14px 14px' }}>
-        <Stat icon="🛒" label={`${order.items} items`} />
-        <Stat icon="📍" label={`${order.distance} mi`} />
-        <Stat icon="🕓" label={order.window} />
-      </div>
-
-      {/* tags */}
-      {order.tags.length > 0 && (
-        <div style={{ display: 'flex', gap: 6, padding: '0 14px 14px' }}>
-          {order.tags.map(tag => (
-            <span key={tag} style={{
-              padding: '3px 8px', borderRadius: 99,
-              background: tag === 'Promo' ? 'rgba(3,135,103,0.1)' : 'rgba(24,12,32,0.06)',
-              color: tag === 'Promo' ? C.green : C.inkMuted,
-              fontSize: 11, fontWeight: 600, letterSpacing: 0.2,
-            }}>{tag}</span>
-          ))}
+          background: '#d3ece4',
+          color: '#0b5f4e',
+          textAlign: 'center',
+          fontSize: 13,
+          fontWeight: 700,
+          lineHeight: '18px',
+          padding: '7px 12px',
+        }}>
+          Exclusive to you · {exclusiveSeconds}s
         </div>
       )}
-
+      <div style={{ position: 'relative', padding: '16px' }}>
+        <div style={{ position: 'absolute', right: 16, top: 16, width: 40, height: 40 }}>{targetLogo}</div>
+        <div style={{ color: '#177cba', fontSize: 14, fontWeight: 600, lineHeight: '18px', marginBottom: 4 }}>Shop &amp; deliver</div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: 24, lineHeight: '24px', fontWeight: 600, color: '#180c20', letterSpacing: -0.2 }}>${total}</div>
+          {tipText && <div style={{ fontSize: 16, lineHeight: '18px', color: C.inkMuted }}>{tipText}</div>}
+        </div>
+        {order.promoText && <div style={{ marginTop: 2, color: '#038767', fontSize: 14, lineHeight: '18px', fontWeight: 400, display: 'flex', alignItems: 'center', gap: 4 }}>{order.promoText}</div>}
+        <div style={{ marginTop: 10, fontSize: 16, lineHeight: '24px', color: '#180c20', fontWeight: 600 }}>{order.window}</div>
+        <div style={{ marginTop: 0, fontSize: 16, lineHeight: '24px', color: '#180c20', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          <span>{order.items} total items</span>
+          <span>•</span>
+          <span>{order.estMins} min est</span>
+          <span>•</span>
+          <span>{order.distance} mi</span>
+        </div>
+        <div style={{ marginTop: 0, fontSize: 16, lineHeight: '24px', color: '#180c20' }}>{order.store} - {order.neighborhood}</div>
+        {order.tagPill && (
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            marginTop: 8,
+            padding: '4px 10px',
+            borderRadius: 999,
+            background: order.tagPill === 'ID scan' ? '#f8dbe0' : 'rgba(24,12,32,0.08)',
+            color: order.tagPill === 'ID scan' ? '#9f2033' : C.inkMuted,
+            fontSize: 12,
+            fontWeight: 700,
+          }}>
+            {order.tagPill}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1250,14 +1503,7 @@ function Stat({ icon, label }) {
 
 function OrderCards() {
   return (
-    <div style={{ paddingTop: 8 }}>
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 16px 12px', fontFamily: FONT,
-      }}>
-        <span style={{ fontSize: 18, fontWeight: 600, color: C.ink, letterSpacing: -0.2 }}>Offers</span>
-        <span style={{ fontSize: 13, color: C.inkMuted }}>{ORDERS.length} nearby</span>
-      </div>
+    <div style={{ paddingTop: 8, paddingBottom: 8 }}>
       {ORDERS.map(order => <OrderCard key={order.id} order={order} />)}
     </div>
   );
@@ -1337,12 +1583,12 @@ function StoreSheet({ store, onClose, sheetRef }) {
         <div style={{ padding: '0 16px' }}>
           <button data-no-drag="true" onClick={onClose} style={{
             width: '100%', padding: '14px 0', borderRadius: 99,
-            background: '#212121', color: '#fff', border: 'none',
+            background: 'transparent', color: '#212121', border: '2px solid #212121',
             fontFamily: FONT, fontSize: 16, fontWeight: 600, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L4.5 20.3l.7.7 6.8-3 6.8 3 .7-.7L12 2z" fill="white"/>
+              <path d="M12 2L4.5 20.3l.7.7 6.8-3 6.8 3 .7-.7L12 2z" fill="#212121"/>
             </svg>
             Navigate
           </button>
@@ -1498,6 +1744,7 @@ function App() {
         <BottomSheet
           snapIndex={snap} setSnapIndex={setSnap} snaps={SNAPS}
           onTopChange={setSheetTop}
+          showMapCta={snap === 0}
         >
           <OrderCards />
           <div style={{ padding: '24px 16px 40px', display: 'flex' }}>
@@ -1507,7 +1754,7 @@ function App() {
               style={{
                 width: '100%', padding: '14px 0', borderRadius: 99,
                 background: 'transparent', color: C.ink,
-                border: `1px solid ${C.hairline}`,
+                border: '2px solid #212121',
                 fontFamily: FONT, fontSize: 16, fontWeight: 600,
                 cursor: 'pointer', letterSpacing: 0.1,
               }}
@@ -1516,11 +1763,41 @@ function App() {
         </BottomSheet>
       </div>
 
+      {snap === 0 && (
+        <button
+          data-no-drag="true"
+          onClick={() => setSnap(2)}
+          style={{
+            position: 'absolute',
+            left: '50%',
+            bottom: 48,
+            transform: 'translateX(-50%)',
+            minWidth: 44,
+            minHeight: 44,
+            padding: '0 18px',
+            borderRadius: 999,
+            border: 'none',
+            background: '#212121',
+            color: '#fff',
+            fontFamily: FONT,
+            fontSize: 12,
+            fontWeight: 600,
+            letterSpacing: 0.2,
+            cursor: 'pointer',
+            zIndex: 26,
+            animation: 'fadeInUp 0.28s cubic-bezier(0.22,1,0.36,1) both',
+          }}
+        >
+          Map
+        </button>
+      )}
+
       {/* GO ONLINE CTA — only when offline */}
       {!online && (
         <div style={{
           position: 'absolute', left: 0, right: 0, bottom: 0,
           padding: '12px 12px 56px', zIndex: 25,
+          transform: 'translateY(32px)',
           fontFamily: FONT,
         }}>
           {/* blur bg — starts halfway down the card */}
