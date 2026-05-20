@@ -1855,7 +1855,7 @@ function App() {
   // 1 = mid (offers visible above metro)
   // 2 = peek (most map showing)
   const SNAPS = compactViewport
-    ? [72, Math.round(viewportHeight * 0.54), Math.max(144, viewportHeight - 180)]
+    ? [144, Math.round(viewportHeight * 0.54) + 72, Math.max(144, viewportHeight - 180) + 72]
     : [96, 380, 704];
   const [snap, setSnap] = useState(1);
   const [sheetTop, setSheetTop] = useState(SNAPS[1]);
