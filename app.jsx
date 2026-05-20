@@ -1305,7 +1305,14 @@ function SideDrawer({ open, onClose, name, compact = false }) {
 // ─────────────────────────────────────────────────────────────
 function FilterSheet({ open, onClose, filters, setFilters }) {
   const toggle = (key) => setFilters({ ...filters, [key]: !filters[key] });
-  const clearFilters = () => setFilters({ promo: false, hourly: false, batch: false, drinks: false });
+  const clearFilters = () => setFilters({ deliveries: false, personalShopping: false, deliveryRoutes: false, runOut: false });
+  const runOutDisabled = filters.deliveries && filters.personalShopping && filters.deliveryRoutes;
+  const rows = [
+    ['deliveries', 'Deliveries', 'Pick up and drop off'],
+    ['personalShopping', 'Personal shopping', 'Shop and deliver grocery and retail orders for Shipt members.'],
+    ['deliveryRoutes', 'Delivery routes', 'Deliver multiple pages to addresses across town. No shopping necessary.'],
+    ['runOut', 'See other offers if I run out', null],
+  ];
 
   return (
     <>
@@ -1329,28 +1336,32 @@ function FilterSheet({ open, onClose, filters, setFilters }) {
           padding: '16px 16px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <button onClick={onClose} style={iconBtn}><IconClose color={C.ink} /></button>
-          <span style={{ fontSize: 16, fontWeight: 600, color: C.ink }}>Filters</span>
+          <span style={{ fontSize: 16, fontWeight: 600, color: C.ink }}>Offer types</span>
           <button onClick={clearFilters} style={{
             ...iconBtn, width: 'auto', padding: '0 4px',
             fontSize: 14, color: '#212121', fontWeight: 600,
           }}>Clear</button>
         </div>
         <div style={{ padding: '8px 0 16px' }}>
-          {[
-            ['promo',  'Promo orders only'],
-            ['hourly', 'Hourly windows'],
-            ['batch',  'Batch deliveries'],
-            ['drinks', 'No alcohol orders'],
-          ].map(([key, label], i, arr) => (
+          {rows.map(([key, label, description], i, arr) => {
+            const disabled = key === 'runOut' && runOutDisabled;
+            return (
             <label key={key} style={{
-              display: 'flex', alignItems: 'center', padding: '16px 20px',
+              display: 'flex', alignItems: 'center', padding: i === arr.length - 1 ? '15.5px 16px' : '16px 16px',
               borderBottom: i === arr.length - 1 ? 'none' : `0.5px solid ${C.hairline}`,
-              cursor: 'pointer',
+              cursor: disabled ? 'not-allowed' : 'pointer',
+              position: 'relative',
+              minHeight: i === arr.length - 1 ? 64 : 72,
+              opacity: disabled ? 0.45 : 1,
             }}>
-              <span style={{ flex: 1, fontSize: 16, color: C.ink }}>{label}</span>
-              <Switch on={filters[key]} onChange={() => toggle(key)} />
+              <div style={{ paddingRight: 16, flex: 1 }}>
+                <div style={{ fontSize: 16, lineHeight: '24px', color: C.ink }}>{label}</div>
+                {description && <div style={{ marginTop: 2, fontSize: 14, lineHeight: '18px', color: C.inkMuted }}>{description}</div>}
+              </div>
+              <Switch on={filters[key]} disabled={disabled} onChange={() => !disabled && toggle(key)} />
             </label>
-          ))}
+            );
+          })}
         </div>
         <div style={{ padding: '8px 16px 0' }}>
           <button onClick={onClose} style={{
@@ -1361,6 +1372,24 @@ function FilterSheet({ open, onClose, filters, setFilters }) {
         </div>
       </div>
     </>
+  );
+}
+
+function Switch({ on, onChange, disabled = false }) {
+  return (
+    <button onClick={disabled ? undefined : onChange} type="button" disabled={disabled} style={{
+      width: 44, height: 26, borderRadius: 99, border: 'none', cursor: 'pointer',
+      background: on ? '#212121' : 'rgb(206,203,208)',
+      position: 'relative', transition: 'background 0.2s ease', padding: 0,
+      opacity: disabled ? 0.6 : 1,
+    }}>
+      <div style={{
+        position: 'absolute', top: 2, left: on ? 20 : 2,
+        width: 22, height: 22, borderRadius: '50%', background: '#fff',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+        transition: 'left 0.2s ease',
+      }} />
+    </button>
   );
 }
 
@@ -1858,7 +1887,7 @@ function App() {
   const [headerOpen, setHeaderOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [filters, setFilters] = useState({ promo: false, hourly: false, batch: false, drinks: false });
+  const [filters, setFilters] = useState({ deliveries: true, personalShopping: true, deliveryRoutes: false, runOut: true });
   const [online, setOnline] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [selectedStore, setSelectedStore] = useState(null);
