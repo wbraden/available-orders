@@ -87,13 +87,21 @@
       const vw = Math.max(320, window.innerWidth);
       const vh = Math.max(480, window.visualViewport?.height || window.innerHeight);
       if (vw < 400) {
+        document.body.style.display = 'block';
         el.style.transform = 'none';
+        el.style.position = 'fixed';
+        el.style.inset = '0';
         el.style.width = '100vw';
-        el.style.height = `${vh}px`;
+        el.style.height = '100dvh';
         el.style.maxWidth = 'none';
         el.style.maxHeight = 'none';
         return;
       }
+      document.body.style.display = 'flex';
+      document.body.style.alignItems = 'center';
+      document.body.style.justifyContent = 'center';
+      el.style.position = 'relative';
+      el.style.inset = 'auto';
       const sx = (vw - pad) / W;
       const sy = (vh - pad) / H;
       const s = Math.max(0.4, Math.min(1.1, Math.min(sx, sy)));
