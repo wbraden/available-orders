@@ -1792,10 +1792,15 @@ function App() {
   }/*EDITMODE-END*/);
   const lowDemand = t.demand === 'low';
   const getViewportWidth = () => Math.min(window.innerWidth, window.visualViewport?.width || window.innerWidth);
+  const getViewportHeight = () => Math.min(window.innerHeight, window.visualViewport?.height || window.innerHeight);
   const [viewportWidth, setViewportWidth] = useState(getViewportWidth());
+  const [viewportHeight, setViewportHeight] = useState(getViewportHeight());
 
   useEffect(() => {
-    const onResize = () => setViewportWidth(getViewportWidth());
+    const onResize = () => {
+      setViewportWidth(getViewportWidth());
+      setViewportHeight(getViewportHeight());
+    };
     window.addEventListener('resize', onResize);
     window.visualViewport?.addEventListener('resize', onResize);
     return () => {
@@ -1848,7 +1853,9 @@ function App() {
   // 0 = fullscreen (sheet covers everything, no map peek)
   // 1 = mid (offers visible above metro)
   // 2 = peek (most map showing)
-  const SNAPS = [96, 380, 704];
+  const SNAPS = compactViewport
+    ? [72, Math.round(viewportHeight * 0.54), Math.max(144, viewportHeight - 180)]
+    : [96, 380, 704];
   const [snap, setSnap] = useState(1);
   const [sheetTop, setSheetTop] = useState(SNAPS[1]);
 
