@@ -1791,14 +1791,19 @@ function App() {
     "demand": "high"
   }/*EDITMODE-END*/);
   const lowDemand = t.demand === 'low';
-  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
+  const getViewportWidth = () => Math.min(window.innerWidth, window.visualViewport?.width || window.innerWidth);
+  const [viewportWidth, setViewportWidth] = useState(getViewportWidth());
 
   useEffect(() => {
-    const onResize = () => setViewportWidth(window.innerWidth);
+    const onResize = () => setViewportWidth(getViewportWidth());
     window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    window.visualViewport?.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.visualViewport?.removeEventListener('resize', onResize);
+    };
   }, []);
-  const compactViewport = viewportWidth < 400;
+  const compactViewport = viewportWidth < 430;
 
   const [headerOpen, setHeaderOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
