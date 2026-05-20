@@ -119,34 +119,56 @@ const HomeIndicator = () => (
 // ─────────────────────────────────────────────────────────────
 // The map (image asset from figma)
 // ─────────────────────────────────────────────────────────────
-// Grocery stores around Minneapolis with simulated demand multipliers
+// Retailers around Denver with simulated demand multipliers
 const STORES = [
-  { name: 'Target',          brand: 'target', lat: 44.9484, lng: -93.2982, demand: 1.0, address: '3600 Nicollet Ave', hours: [{ days: 'Mon–Sat', time: '8am – 10pm' }, { days: 'Sun', time: '9am – 9pm' }] },
-  { name: 'Lunds & Byerlys', brand: 'lunds',  lat: 44.9486, lng: -93.2917, demand: 1.2, address: '1450 W Lake St',   hours: [{ days: 'Every day', time: '6am – 11pm' }] },
-  { name: 'Whole Foods',     brand: 'wfm',    lat: 44.9543, lng: -93.2750, demand: 0.9, address: '222 Hennepin Ave', hours: [{ days: 'Every day', time: '7am – 10pm' }] },
-  { name: 'Target',          brand: 'target', lat: 44.9477, lng: -93.2438, demand: 0.8, address: '900 W Broadway',   hours: [{ days: 'Mon–Sat', time: '8am – 10pm' }, { days: 'Sun', time: '9am – 9pm' }] },
-  { name: 'Cub Foods',       brand: 'cub',    lat: 44.9583, lng: -93.2477, demand: 0.7, address: '2850 26th Ave S',  hours: [{ days: 'Every day', time: '6am – 11pm' }] },
-  { name: 'Lunds & Byerlys', brand: 'lunds',  lat: 44.9899, lng: -93.2530, demand: 1.1, address: '13 W Franklin Ave',hours: [{ days: 'Every day', time: '6am – 11pm' }] },
-  { name: 'Trader Joe\'s',   brand: 'tj',     lat: 44.9483, lng: -93.3163, demand: 1.0, address: '3930 W 50th St',   hours: [{ days: 'Every day', time: '8am – 9pm' }] },
-  { name: 'Aldi',            brand: 'aldi',   lat: 44.9314, lng: -93.2785, demand: 0.2, address: '10 E Franklin Ave', hours: [{ days: 'Mon–Sat', time: '9am – 8pm' }, { days: 'Sun', time: '10am – 7pm' }] },
-  { name: 'Kowalski\'s',     brand: 'lunds',  lat: 44.9356, lng: -93.2728, demand: 1.0, address: '2440 Hennepin Ave', hours: [{ days: 'Every day', time: '7am – 10pm' }] },
-  { name: 'Fresh Thyme',     brand: 'wfm',    lat: 44.9729, lng: -93.2432, demand: 0.85, address: '1113 W Broadway Ave', hours: [{ days: 'Every day', time: '7am – 10pm' }] },
-  { name: 'Hy-Vee',          brand: 'cub',    lat: 44.8547, lng: -93.2421, demand: 0.75, address: '7701 Nicollet Ave', hours: [{ days: 'Every day', time: '6am – 11pm' }] },
-  { name: 'Aldi',            brand: 'aldi',   lat: 44.9559, lng: -93.2098, demand: 0.45, address: '1500 E Lake St', hours: [{ days: 'Mon–Sat', time: '9am – 8pm' }, { days: 'Sun', time: '10am – 7pm' }] },
-  { name: 'Cub Foods',       brand: 'cub',    lat: 44.9778, lng: -93.2650, demand: 0.95, address: '1104 Lagoon Ave', hours: [{ days: 'Every day', time: '6am – 11pm' }] },
-  { name: 'Lunds & Byerlys', brand: 'lunds',  lat: 44.9052, lng: -93.3390, demand: 1.05, address: '50th & France', hours: [{ days: 'Every day', time: '6am – 11pm' }] },
-  { name: 'Target',          brand: 'target', lat: 44.9890, lng: -93.2714, demand: 0.9, address: '900 Nicollet Mall', hours: [{ days: 'Mon–Sat', time: '8am – 10pm' }, { days: 'Sun', time: '9am – 9pm' }] },
-  { name: 'Trader Joe\'s',   brand: 'tj',     lat: 44.9322, lng: -93.2895, demand: 0.88, address: '1500 W 66th St', hours: [{ days: 'Every day', time: '8am – 9pm' }] },
-  { name: 'Wedge Co-op',     brand: 'wfm',    lat: 44.9471, lng: -93.2861, demand: 0.6, address: '2105 Lyndale Ave S', hours: [{ days: 'Every day', time: '7am – 10pm' }] },
+  { name: 'Safeway',                 brand: 'safeway',  lat: 39.7380, lng: -104.9880, demand: 1.0, address: '757 E 20th Ave', hours: [{ days: 'Every day', time: '6am – 11pm' }] },
+  { name: 'Target',                  brand: 'target',   lat: 39.7486, lng: -104.9955, demand: 1.2, address: '1600 California St', hours: [{ days: 'Mon–Sun', time: '8am – 10pm' }] },
+  { name: 'King Soopers',            brand: 'kings',    lat: 39.7287, lng: -104.9879, demand: 1.1, address: '1155 E 9th Ave', hours: [{ days: 'Every day', time: '6am – 11pm' }] },
+  { name: 'Michaels',                brand: 'michaels',  lat: 39.7162, lng: -104.9531, demand: 0.7, address: '300 S Colorado Blvd', hours: [{ days: 'Mon–Sat', time: '9am – 9pm' }, { days: 'Sun', time: '10am – 7pm' }] },
+  { name: 'Walgreens',               brand: 'walgreens', lat: 39.7399, lng: -104.9849, demand: 0.85, address: '950 17th St', hours: [{ days: 'Every day', time: '7am – 10pm' }] },
+  { name: 'CVS',                     brand: 'cvs',      lat: 39.7510, lng: -104.9950, demand: 0.8, address: '1600 Broadway', hours: [{ days: 'Every day', time: '8am – 9pm' }] },
+  { name: 'PetSmart',                brand: 'petsmart', lat: 39.6810, lng: -104.9870, demand: 0.6, address: '4982 S Broadway', hours: [{ days: 'Every day', time: '9am – 9pm' }] },
+  { name: 'Office Depot OfficeMax',  brand: 'office',   lat: 39.7077, lng: -104.9731, demand: 0.5, address: '780 S Colorado Blvd', hours: [{ days: 'Mon–Sat', time: '8am – 8pm' }, { days: 'Sun', time: '10am – 6pm' }] },
+  { name: 'Petco',                   brand: 'petco',    lat: 39.7426, lng: -104.9998, demand: 0.55, address: '2000 W 15th St', hours: [{ days: 'Every day', time: '9am – 8pm' }] },
+  { name: '7-Eleven',                brand: 'seven',    lat: 39.7608, lng: -104.9867, demand: 0.4, address: '1400 Speer Blvd', hours: [{ days: 'Every day', time: '24 hours' }] },
+  { name: "Lowe's",                  brand: 'lowes',    lat: 39.6501, lng: -104.9878, demand: 0.75, address: '3700 E Evans Ave', hours: [{ days: 'Mon–Sat', time: '6am – 10pm' }, { days: 'Sun', time: '8am – 8pm' }] },
+  { name: 'Ulta Beauty at Target',    brand: 'ulta',     lat: 39.7560, lng: -104.9980, demand: 0.65, address: '500 16th St Mall', hours: [{ days: 'Mon–Sun', time: '10am – 8pm' }] },
+  { name: "Carter's",                brand: 'carters',   lat: 39.6040, lng: -105.0900, demand: 0.45, address: '8505 Park Meadows Center Dr', hours: [{ days: 'Mon–Sat', time: '10am – 9pm' }, { days: 'Sun', time: '11am – 6pm' }] },
+  { name: 'Safeway',                 brand: 'safeway',  lat: 39.7345, lng: -104.8612, demand: 0.95, address: '6100 E 1st Ave', hours: [{ days: 'Every day', time: '6am – 11pm' }] },
+  { name: 'King Soopers',            brand: 'kings',    lat: 39.7098, lng: -104.8478, demand: 0.9, address: '5000 E Hampden Ave', hours: [{ days: 'Every day', time: '6am – 11pm' }] },
+  { name: 'Target',                  brand: 'target',   lat: 39.6871, lng: -104.8293, demand: 1.05, address: '14500 E Colfax Ave', hours: [{ days: 'Mon–Sun', time: '8am – 10pm' }] },
+  { name: 'Walgreens',               brand: 'walgreens', lat: 39.7259, lng: -104.8058, demand: 0.72, address: '1900 S Havana St', hours: [{ days: 'Every day', time: '7am – 10pm' }] },
+  { name: 'CVS',                     brand: 'cvs',      lat: 39.7408, lng: -104.8015, demand: 0.68, address: '5001 S Parker Rd', hours: [{ days: 'Every day', time: '8am – 9pm' }] },
+  { name: 'PetSmart',                brand: 'petsmart', lat: 39.6567, lng: -104.8129, demand: 0.55, address: '7985 E Mississippi Ave', hours: [{ days: 'Every day', time: '9am – 9pm' }] },
+  { name: 'Office Depot OfficeMax',  brand: 'office',   lat: 39.6904, lng: -104.8065, demand: 0.48, address: '1600 S Abilene St', hours: [{ days: 'Mon–Sat', time: '8am – 8pm' }, { days: 'Sun', time: '10am – 6pm' }] },
+  { name: 'Petco',                   brand: 'petco',    lat: 39.7390, lng: -104.7830, demand: 0.52, address: '6310 S Parker Rd', hours: [{ days: 'Every day', time: '9am – 8pm' }] },
+  { name: '7-Eleven',                brand: 'seven',    lat: 39.7157, lng: -104.7902, demand: 0.42, address: '1150 S Havana St', hours: [{ days: 'Every day', time: '24 hours' }] },
+  { name: "Lowe's",                  brand: 'lowes',    lat: 39.6819, lng: -104.8084, demand: 0.73, address: '2500 S Parker Rd', hours: [{ days: 'Mon–Sat', time: '6am – 10pm' }, { days: 'Sun', time: '8am – 8pm' }] },
+  { name: 'Ulta Beauty at Target',    brand: 'ulta',     lat: 39.6638, lng: -104.8461, demand: 0.6, address: '2400 S Colorado Blvd', hours: [{ days: 'Mon–Sun', time: '10am – 8pm' }] },
+  { name: "Carter's",                brand: 'carters',   lat: 39.7182, lng: -104.7936, demand: 0.44, address: '14300 E Alameda Ave', hours: [{ days: 'Mon–Sat', time: '10am – 9pm' }, { days: 'Sun', time: '11am – 6pm' }] },
+  { name: 'Safeway',                 brand: 'safeway',  lat: 39.7495, lng: -104.7679, demand: 0.92, address: '2500 S Parker Rd', hours: [{ days: 'Every day', time: '6am – 11pm' }] },
+  { name: 'King Soopers',            brand: 'kings',    lat: 39.6536, lng: -104.7846, demand: 0.89, address: '10550 E Garden Dr', hours: [{ days: 'Every day', time: '6am – 11pm' }] },
+  { name: 'Target',                  brand: 'target',   lat: 39.6068, lng: -104.7086, demand: 1.08, address: '6767 S Clinton St', hours: [{ days: 'Mon–Sun', time: '8am – 10pm' }] },
+  { name: 'Walgreens',               brand: 'walgreens', lat: 39.7037, lng: -104.7485, demand: 0.7, address: '10401 E Arapahoe Rd', hours: [{ days: 'Every day', time: '7am – 10pm' }] },
+  { name: 'CVS',                     brand: 'cvs',      lat: 39.6377, lng: -104.7480, demand: 0.66, address: '7340 E Arapahoe Rd', hours: [{ days: 'Every day', time: '8am – 9pm' }] },
+  { name: 'PetSmart',                brand: 'petsmart', lat: 39.5728, lng: -104.7144, demand: 0.58, address: '6464 S Quebec St', hours: [{ days: 'Every day', time: '9am – 9pm' }] },
+  { name: 'Office Depot OfficeMax',  brand: 'office',   lat: 39.7499, lng: -104.7312, demand: 0.49, address: '5600 S Quebec St', hours: [{ days: 'Mon–Sat', time: '8am – 8pm' }, { days: 'Sun', time: '10am – 6pm' }] },
 ];
 
 const BRAND_COLORS = {
   target: '#cc0000',
-  lunds:  '#005b35',
-  wfm:    '#1f4d2a',
-  cub:    '#0066b3',
-  tj:     '#a3261b',
-  aldi:   '#ed7322',
+  safeway: '#d61f26',
+  kings: '#e5252a',
+  michaels: '#d91f26',
+  walgreens: '#e31837',
+  cvs: '#d11f1f',
+  petsmart: '#0054a6',
+  office: '#b90000',
+  petco: '#103a8c',
+  seven: '#ef7d00',
+  lowes: '#004990',
+  ulta: '#f26b21',
+  carters: '#009ddc',
 };
 
 // haversine distance in km between two lat/lng pairs
@@ -199,10 +221,53 @@ function demandColor(norm, online) {
   return interpolateGradient(BLUYI, norm);
 }
 
+function heatColor(norm) {
+  const exponent = DEMO_CONFIG.map.colorExponent ?? 1;
+  return interpolateGradient(BLUYI, Math.pow(Math.max(0, Math.min(1, norm)), exponent));
+}
+
+const DEMO_CONFIG = window.DEMO_CONFIG || {
+  storeDemand: {},
+  map: {
+    driverVariance: 0.18,
+    driverBase: 0.9,
+    demandBias: 0.18,
+    smoothingRadius: 1,
+    colorStops: ['#f7feae', '#f2c14e', '#f28e2b', '#d95d39', '#b30059'],
+    colorExponent: 0.72,
+    onlineFillMin: 0.16,
+    onlineFillMax: 0.58,
+    offlineFillMin: 0.05,
+    offlineFillMax: 0.12,
+  },
+};
+
+const HEAT_DEMAND_THRESHOLD = 0.5;
+
+function cellHash(value) {
+  let h = 2166136261;
+  for (let i = 0; i < value.length; i++) {
+    h ^= value.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0) / 4294967295;
+}
+
+function driverLoadForCell(cell, norm) {
+  const base = DEMO_CONFIG.map.driverBase;
+  const variance = DEMO_CONFIG.map.driverVariance;
+  const noise = cellHash(cell);
+  return Math.max(0.15, base + (noise - 0.5) * 2 * variance + norm * 0.35);
+}
+
+function storeDemandFor(store) {
+  return DEMO_CONFIG.storeDemand[store.name] ?? store.demand ?? 1;
+}
+
 // SVG shopping basket icon (simple, clean)
 const BASKET_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18l-2 13H5L3 6z"/><path d="M8 6V4a4 4 0 0 1 8 0v2"/></svg>`;
 
-function buildStoreIcon(store, norm, online, selected = false, animClass = '') {
+function buildStoreIcon(store, norm, online, selected = false, animClass = '', demand = 1) {
   if (!window.L) return null;
   const color = demandColor(norm, online);
   const size = selected ? 38 : 28;
@@ -252,13 +317,14 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
 
       marker.setZIndexOffset(isNowSelected ? 1000 : 0);
       const animClass = isNowSelected ? 'pin-bounce-in' : 'pin-shrink';
-      const icon = buildStoreIcon(store, norm, online, isNowSelected, animClass);
+      const icon = buildStoreIcon(store, norm, online, isNowSelected, animClass, storeDemandFor(store));
       if (icon) marker.setIcon(icon);
     });
   }, [selectedStore]);
   const mapRef = useRef(null);
   const containerRef = useRef(null);
   const hexLayersRef = useRef([]);   // { polygon, norm }[]
+  const perimeterLayerRef = useRef(null);
   const storeMarkersRef = useRef([]); // { marker, norm, name }[]
 
   useEffect(() => {
@@ -270,7 +336,7 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
     const L = window.L;
     const h3 = window.h3 || window.h3reactNative || window.h3Js || (window.h3 = window["h3-js"]);
     const m = L.map(containerRef.current, {
-      center: [44.948, -93.270],
+      center: [39.7392, -104.9903],
       zoom: 13,
       zoomControl: false,
       attributionControl: false,
@@ -284,6 +350,8 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
     m.getPane('hexPane').style.zIndex = '350';
     m.createPane('labelPane');
     m.getPane('labelPane').style.zIndex = '650';
+    m.createPane('userPane');
+    m.getPane('userPane').style.zIndex = '900';
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       subdomains: 'abcd',
       maxZoom: 19,
@@ -296,6 +364,8 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
     if (h3 && typeof h3.latLngToCell === 'function') {
       const RES = 9;
       const demandLayer = L.layerGroup().addTo(m);
+      const perimeterLayer = L.layerGroup().addTo(m);
+      perimeterLayerRef.current = perimeterLayer;
       const demandPerCell = new Map();
       const cellSet = new Set();
       const RING = 6;
@@ -308,48 +378,88 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
       let maxDemand = 0;
       cellSet.forEach(cell => {
         const [lat, lng] = h3.cellToLatLng(cell);
-        let d = 0;
+        let score = 0;
         STORES.forEach(s => {
           const dist = haversineKm(lat, lng, s.lat, s.lng);
-          d += s.demand / (dist + 0.18);
+          const storeDemand = storeDemandFor(s);
+          if (storeDemand < HEAT_DEMAND_THRESHOLD) return;
+          const spread = 1.1 + storeDemand * 1.45;
+          const proximity = 1 / Math.pow((dist / spread) + DEMO_CONFIG.map.demandBias, 1.2);
+          score += Math.pow(storeDemand, 1.4) * proximity;
         });
-        demandPerCell.set(cell, d);
-        if (d > maxDemand) maxDemand = d;
+        const driverPressure = driverLoadForCell(cell, score);
+        score -= driverPressure * 0.12;
+        demandPerCell.set(cell, score);
+        if (score > maxDemand) maxDemand = score;
       });
+      if (maxDemand <= 0) maxDemand = 1;
 
       const polys = [];
+      const edgeCounts = new Map();
+      const edgePoints = new Map();
+      const edgeKey = (a, b) => {
+        const aKey = `${a[0].toFixed(6)},${a[1].toFixed(6)}`;
+        const bKey = `${b[0].toFixed(6)},${b[1].toFixed(6)}`;
+        return aKey < bKey ? `${aKey}|${bKey}` : `${bKey}|${aKey}`;
+      };
       cellSet.forEach(cell => {
         const boundary = h3.cellToBoundary(cell);
         const d = demandPerCell.get(cell);
-        const norm = d / maxDemand;
+        const norm = Math.max(0, Math.min(1, d / maxDemand));
+        const color = d < HEAT_DEMAND_THRESHOLD ? null : heatColor(Math.min(1, Math.pow(norm, 0.8)));
         const polygon = L.polygon(boundary, {
           weight: 0,
           opacity: 0,
           interactive: false,
           pane: 'hexPane',
         }).addTo(demandLayer);
-        polys.push({ polygon, norm });
+        polys.push({ polygon, norm, demand: d, color });
+
+        for (let i = 0; i < boundary.length; i++) {
+          const a = boundary[i];
+          const b = boundary[(i + 1) % boundary.length];
+          const key = edgeKey(a, b);
+          edgeCounts.set(key, (edgeCounts.get(key) || 0) + 1);
+          edgePoints.set(key, [a, b]);
+        }
       });
       hexLayersRef.current = polys;
+
+      edgeCounts.forEach((count, key) => {
+        if (count !== 1) return;
+        const pts = edgePoints.get(key);
+        L.polyline(pts, {
+          color: '#aeb3bd',
+          weight: 2.2,
+          opacity: 0.75,
+          lineCap: 'round',
+          lineJoin: 'round',
+          interactive: false,
+          pane: 'hexPane',
+        }).addTo(perimeterLayer);
+      });
 
       // ──────────────────────────────────────────
       // Store markers — icon colored by demand, label below
       // ──────────────────────────────────────────
       const storeNorms = STORES.map(s => {
-        // sample demand at the store's own cell + immediate ring for stability
+        const storeDemand = storeDemandFor(s);
+        const demandNorm = Math.max(0, Math.min(1, (storeDemand - 0.35) / 0.95));
+        // sample nearby weighted demand so the pin reflects the surrounding hotspot too
         const center = h3.latLngToCell(s.lat, s.lng, RES);
-        const ring = [center, ...h3.gridDisk(center, 1)];
+        const ring = [center, ...h3.gridDisk(center, DEMO_CONFIG.map.smoothingRadius)];
         const ds = ring
           .map(c => demandPerCell.get(c) || 0)
           .filter(v => v > 0);
         const avg = ds.length ? ds.reduce((a,b) => a+b, 0) / ds.length : 0;
-        return avg / maxDemand;  // 0..1
+        const hotspotNorm = Math.max(0, Math.min(1, avg / maxDemand));  // 0..1
+        return Math.max(0, Math.min(1, demandNorm * 0.6 + hotspotNorm * 0.4));
       });
 
       STORES.forEach((s, i) => {
         const norm = storeNorms[i];
         const marker = L.marker([s.lat, s.lng], {
-          icon: buildStoreIcon(s, norm, online),
+          icon: buildStoreIcon(s, norm, online, false, '', storeDemandFor(s)),
           title: s.name,
           interactive: true,
           pane: 'labelPane',
@@ -371,7 +481,12 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
       iconSize: [36, 36],
       iconAnchor: [18, 18],
     });
-    L.marker([44.948, -93.265], { icon: haloIcon, interactive: false, zIndexOffset: 1000 }).addTo(m);
+    L.marker([39.7392, -104.9903], {
+      icon: haloIcon,
+      interactive: false,
+      zIndexOffset: 5000,
+      pane: 'userPane',
+    }).addTo(m);
 
     mapRef.current = m;
 
@@ -384,7 +499,7 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
     const ro = new ResizeObserver(() => m.invalidateSize());
     ro.observe(containerRef.current);
 
-    window.__driverMapRecenter = () => m.flyTo([44.948, -93.265], 13, { duration: 0.6 });
+    window.__driverMapRecenter = () => m.flyTo([39.7392, -104.9903], 13, { duration: 0.6 });
     // flyTo centered so latlng appears at targetScreenY pixels from the top of the 812px frame
     window.__driverMapFlyTo = (latlng, targetScreenY) => {
       const zoom = m.getZoom();
@@ -397,42 +512,54 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
       ro.disconnect();
       m.remove();
       mapRef.current = null;
+      perimeterLayerRef.current = null;
       delete window.__driverMapRecenter;
     };
   }, []);
 
   // Update hex demand visualization when online state changes
   useEffect(() => {
-      hexLayersRef.current.forEach(({ polygon, norm }) => {
+      hexLayersRef.current.forEach(({ polygon, norm, demand }) => {
         // enable CSS transition on the SVG path before updating fill
         if (polygon._path) {
           polygon._path.style.transition = 'fill 0.9s ease, fill-opacity 0.9s ease';
           polygon._path.style.mixBlendMode = 'multiply';
         }
+        if (demand < HEAT_DEMAND_THRESHOLD) {
+          polygon.setStyle({ opacity: 0, fillOpacity: 0 });
+          return;
+        }
         if (online) {
-          const color = demandColor(norm, online);
+          const color = heatColor(norm);
           polygon.setStyle({
             color: color, weight: 0, opacity: 0,
             fillColor: color,
-            fillOpacity: 0.18 + Math.pow(norm, 1.15) * 0.34,
+            fillOpacity: 0.2 + Math.pow(norm, 0.9) * 0.48,
           });
         } else {
           if (norm < 0.18) {
             polygon.setStyle({ opacity: 0, fillOpacity: 0 });
           } else {
-            const color = demandColor(norm, online);
             polygon.setStyle({
-              color, weight: 0, opacity: 0,
-              fillColor: color,
-              fillOpacity: 0.06 + Math.pow(norm, 1.15) * 0.08,
+              color: '#c7c9d1',
+              weight: 0,
+              opacity: 0,
+              fillColor: '#000000',
+              fillOpacity: 0.1,
             });
           }
         }
       });
 
+      if (perimeterLayerRef.current) {
+        if (online) {
+          perimeterLayerRef.current.clearLayers();
+        }
+      }
+
     // Update store marker icons to match online/offline color
     storeMarkersRef.current.forEach(({ marker, norm, store }) => {
-      const icon = buildStoreIcon(store, norm, online);
+      const icon = buildStoreIcon(store, norm, online, false, '', storeDemandFor(store));
       if (icon) marker.setIcon(icon);
     });
   }, [online]);
@@ -1330,10 +1457,10 @@ function BusyTimesChart() {
 const ORDERS = [
   {
     id: 4,
-    store: 'Target',
-    storeBrand: 'target',
-    neighborhood: 'Northeast Minneapolis',
-    address: '900 W Broadway Ave',
+    store: 'Safeway',
+    storeBrand: 'safeway',
+    neighborhood: 'Capitol Hill',
+    address: '757 E 20th Ave',
     items: 25,
     pay: 16.05,
     tip: 8.00,
@@ -1345,10 +1472,10 @@ const ORDERS = [
   },
   {
     id: 1,
-    store: 'Lunds & Byerlys',
-    storeBrand: 'lunds',
-    neighborhood: 'Northeast Minneapolis',
-    address: '1450 W Lake St',
+    store: 'King Soopers',
+    storeBrand: 'kings',
+    neighborhood: 'Uptown',
+    address: '1155 E 9th Ave',
     items: 14,
     pay: 16.05,
     tip: 0,
@@ -1362,8 +1489,8 @@ const ORDERS = [
     id: 2,
     store: 'Target',
     storeBrand: 'target',
-    neighborhood: 'Northeast Minneapolis',
-    address: '900 W Broadway Ave',
+    neighborhood: 'Downtown Denver',
+    address: '1600 California St',
     items: 25,
     pay: 16.05,
     tip: 8,
@@ -1374,21 +1501,97 @@ const ORDERS = [
   },
   {
     id: 3,
-    store: 'Whole Foods',
-    storeBrand: 'wfm',
-    neighborhood: 'Northeast Minneapolis',
-    address: '222 Hennepin Ave E',
+    store: 'Petco',
+    storeBrand: 'petco',
+    neighborhood: 'Cherry Creek',
+    address: '2000 W 15th St',
     items: 14,
     pay: 16.05,
     tip: 6.00,
     distance: 3,
     window: 'Deliver 10 am–11 am',
     estMins: 50,
-    promoText: '✨ plus $2 for on-time delivery',
+    promoText: '✨ same-day pickup',
   },
 ];
 
-const STORE_INITIALS = { target: 'T', lunds: 'L&B', wfm: 'WF', cub: 'CF', tj: 'TJ', aldi: 'AL' };
+const STORE_INITIALS = { target: 'T', safeway: 'S', kings: 'K', michaels: 'M', walgreens: 'W', cvs: 'CVS', petsmart: 'PS', office: 'OD', petco: 'P', seven: '7E', lowes: 'L', ulta: 'U', carters: 'C' };
+const BRAND_LOGOS = {
+  target: 'assets/retailer-logos/Target.png',
+  safeway: 'assets/retailer-logos/Safeway.png',
+  kings: null,
+  michaels: 'assets/retailer-logos/Michaels.png',
+  walgreens: null,
+  cvs: null,
+  petsmart: null,
+  office: 'assets/retailer-logos/Office Depot OfficeMax.png',
+  petco: 'assets/retailer-logos/Petco.png',
+  seven: null,
+  lowes: null,
+  ulta: null,
+  carters: null,
+};
+
+function BrandLogo({ brand, size = 40 }) {
+  const logoSrc = BRAND_LOGOS[brand];
+  if (logoSrc) {
+    return (
+      <img
+        src={logoSrc}
+        alt=""
+        aria-hidden="true"
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',
+          display: 'block',
+        }}
+      />
+    );
+  }
+
+  if (!brand) {
+    return <div style={{ width: size * 1.4, height: size, borderRadius: 12, background: C.hairline }} />;
+  }
+
+  const label = {
+    target: 'Target',
+    safeway: 'Safeway',
+    kings: 'King Soopers',
+    michaels: 'Michaels',
+    walgreens: 'Walgreens',
+    cvs: 'CVS',
+    petsmart: 'PetSmart',
+    office: 'Office Depot OfficeMax',
+    petco: 'Petco',
+    seven: '7-Eleven',
+    lowes: "Lowe's",
+    ulta: 'Ulta',
+    carters: "Carter's",
+  }[brand] || brand;
+  const color = BRAND_COLORS[brand] || C.ink;
+  const short = label.split(' ').slice(0, 2).map(part => part[0]).join('').slice(0, 3).toUpperCase();
+
+  return (
+    <div style={{
+      width: size * 1.4,
+      height: size,
+      borderRadius: 12,
+      background: color,
+      color: '#fff',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: brand === 'office' ? 8 : 12,
+      fontWeight: 700,
+      letterSpacing: 0.1,
+      textAlign: 'center',
+      padding: '0 6px',
+    }}>
+      {short}
+    </div>
+  );
+}
 
 function OrderCard({ order }) {
   const color = BRAND_COLORS[order.storeBrand] || C.ink;
@@ -1412,27 +1615,6 @@ function OrderCard({ order }) {
 
     return () => window.clearInterval(timer);
   }, [order.exclusive, exclusiveSeconds]);
-  const targetLogo = (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <circle cx="19.9987" cy="19.9987" r="19.9987" fill="white" />
-      <mask id="mask0_1_3274" style={{ maskType: 'alpha' }} maskUnits="userSpaceOnUse" x="2" y="2" width="36" height="36">
-        <circle cx="19.9987" cy="19.9972" r="17.2211" fill="#C4C4C4" stroke="white" strokeWidth="1.11104" />
-      </mask>
-      <g mask="url(#mask0_1_3274)" />
-      <g clipPath="url(#clip0_1_3274)">
-        <circle cx="19.9985" cy="19.9987" r="17.7778" fill="white" />
-        <path d="M19.998 2.22095C29.8163 2.22095 37.7761 10.1801 37.7764 19.9983C37.7764 29.8167 29.8164 37.7766 19.998 37.7766C10.1799 37.7764 2.2207 29.8165 2.2207 19.9983C2.22094 10.1802 10.18 2.22118 19.998 2.22095ZM19.998 8.14673C13.4528 8.14695 8.14672 13.453 8.14648 19.9983C8.14648 26.5437 13.4526 31.8506 19.998 31.8508C26.5436 31.8508 31.8506 26.5439 31.8506 19.9983C31.8503 13.4529 26.5435 8.14673 19.998 8.14673Z" fill="#CB2026" />
-        <path d="M20.2383 25.9021C23.5111 25.9021 26.1643 23.2489 26.1643 19.9761C26.1643 16.7033 23.5111 14.0502 20.2383 14.0502C16.9655 14.0502 14.3124 16.7033 14.3124 19.9761C14.3124 23.2489 16.9655 25.9021 20.2383 25.9021Z" fill="#CB2026" />
-        <path fillRule="evenodd" clipRule="evenodd" d="M19.9985 37.5225C29.6766 37.5225 37.5223 29.6769 37.5223 19.9987C37.5223 10.3206 29.6766 2.47492 19.9985 2.47492C10.3203 2.47492 2.47467 10.3206 2.47467 19.9987C2.47467 29.6769 10.3203 37.5225 19.9985 37.5225ZM19.9985 37.7765C29.8169 37.7765 37.7763 29.8171 37.7763 19.9987C37.7763 10.1803 29.8169 2.22095 19.9985 2.22095C10.1801 2.22095 2.2207 10.1803 2.2207 19.9987C2.2207 29.8171 10.1801 37.7765 19.9985 37.7765Z" fill="#9A949E" />
-      </g>
-      <defs>
-        <clipPath id="clip0_1_3274">
-          <rect x="2.2207" y="2.22095" width="35.5556" height="35.5556" rx="17.7778" fill="white" />
-        </clipPath>
-      </defs>
-    </svg>
-  );
-
   return (
     <div style={{
       margin: '0 16px 12px',
@@ -1456,7 +1638,9 @@ function OrderCard({ order }) {
         </div>
       )}
       <div style={{ position: 'relative', padding: '16px' }}>
-        <div style={{ position: 'absolute', right: 16, top: 16, width: 40, height: 40 }}>{targetLogo}</div>
+        <div style={{ position: 'absolute', right: 16, top: 16, width: 60, height: 40, display: 'flex', justifyContent: 'flex-end' }}>
+          <BrandLogo brand={order.storeBrand} />
+        </div>
         <div style={{ color: '#177cba', fontSize: 14, fontWeight: 600, lineHeight: '18px', marginBottom: 4 }}>Shop &amp; deliver</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
           <div style={{ fontSize: 24, lineHeight: '24px', fontWeight: 600, color: '#180c20', letterSpacing: -0.2 }}>${total}</div>
@@ -1553,10 +1737,11 @@ function StoreSheet({ store, onClose, sheetRef }) {
         {/* store header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '8px 16px 16px' }}>
           <div style={{
-            width: 48, height: 48, borderRadius: 12, flexShrink: 0,
-            background: color, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontSize: 12, fontWeight: 700,
-          }}>{initials}</div>
+            width: 60, height: 40, flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <BrandLogo brand={store?.brand} />
+          </div>
           <div>
             <div style={{ fontSize: 18, fontWeight: 600, color: C.ink, lineHeight: '24px' }}>{store?.name}</div>
             <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 2 }}>{store?.address}</div>
@@ -1606,6 +1791,14 @@ function App() {
     "demand": "high"
   }/*EDITMODE-END*/);
   const lowDemand = t.demand === 'low';
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  const compactViewport = viewportWidth < 400;
 
   const [headerOpen, setHeaderOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -1678,9 +1871,12 @@ function App() {
   return (
     <>
     <div style={{
-      width: 375, height: 812, position: 'relative', overflow: 'hidden',
-      borderRadius: 44, background: C.surface,
-      boxShadow: '0 0 0 12px #111, 0 0 0 14px #222, 0 30px 80px rgba(0,0,0,0.4)',
+      width: '100%',
+      height: '100%',
+      position: 'relative', overflow: 'hidden',
+      borderRadius: compactViewport ? 0 : 44,
+      background: C.surface,
+      boxShadow: compactViewport ? 'none' : '0 0 0 12px #111, 0 0 0 14px #222, 0 30px 80px rgba(0,0,0,0.4)',
       fontFamily: FONT,
     }}>
       {/* MAP — fades out as sheet approaches fullscreen */}
@@ -1746,20 +1942,51 @@ function App() {
           onTopChange={setSheetTop}
           showMapCta={snap === 0}
         >
-          <OrderCards />
-          <div style={{ padding: '24px 16px 40px', display: 'flex' }}>
-            <button
-              data-no-drag="true"
-              onClick={goOffline}
-              style={{
-                width: '100%', padding: '14px 0', borderRadius: 99,
-                background: 'transparent', color: C.ink,
-                border: '2px solid #212121',
-                fontFamily: FONT, fontSize: 16, fontWeight: 600,
-                cursor: 'pointer', letterSpacing: 0.1,
-              }}
-            >Go offline</button>
-          </div>
+          {snap === 2 ? (
+            <div style={{
+              minHeight: '100%',
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'center',
+              paddingTop: 10,
+            }}>
+              <div style={{
+                width: '100%',
+                textAlign: 'center',
+                fontFamily: FONT,
+                fontSize: 19,
+                lineHeight: '23px',
+                fontWeight: 600,
+                color: C.ink,
+                letterSpacing: -0.2,
+              }}>
+                {ORDERS.length} orders available
+              </div>
+            </div>
+          ) : (
+            <div style={{ position: 'relative', minHeight: '100%' }}>
+              <div style={{
+                opacity: 1,
+                transform: 'translateY(0)',
+                transition: 'opacity 0.22s ease, transform 0.22s ease',
+              }}>
+                <OrderCards />
+                <div style={{ padding: '24px 16px 40px', display: 'flex' }}>
+                  <button
+                    data-no-drag="true"
+                    onClick={goOffline}
+                    style={{
+                      width: '100%', padding: '14px 0', borderRadius: 99,
+                      background: 'transparent', color: C.ink,
+                      border: '2px solid #212121',
+                      fontFamily: FONT, fontSize: 16, fontWeight: 600,
+                      cursor: 'pointer', letterSpacing: 0.1,
+                    }}
+                  >Go offline</button>
+                </div>
+              </div>
+            </div>
+          )}
         </BottomSheet>
       </div>
 
