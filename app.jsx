@@ -1962,7 +1962,7 @@ function App() {
         >
           {snap === 2 ? (
             <div style={{
-              paddingTop: 10,
+              paddingTop: 0,
             }}>
               <div style={{
                 width: '100%',
