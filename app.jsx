@@ -777,7 +777,7 @@ function TierRow({ onClick }) {
 // ─────────────────────────────────────────────────────────────
 // Bottom sheet — draggable with snap points
 // ─────────────────────────────────────────────────────────────
-function BottomSheet({ snapIndex, setSnapIndex, snaps, children, onTopChange, showMapCta = false }) {
+function BottomSheet({ snapIndex, setSnapIndex, snaps, children, onTopChange, showMapCta = false, compactViewport = false }) {
   const sheetRef = useRef(null);
   const scrollRef = useRef(null);
   const dragRef = useRef(null);
@@ -1069,9 +1069,10 @@ function BottomSheet({ snapIndex, setSnapIndex, snaps, children, onTopChange, sh
         onPointerDown={fsProgress > 0.95 ? onScrollPointerDown : undefined}
         style={{
           flex: 1,
-          overflowY: fsProgress > 0.95 ? 'auto' : 'hidden',
+          overflowY: compactViewport || fsProgress > 0.95 ? 'auto' : 'hidden',
           overscrollBehavior: 'contain',
-          touchAction: fsProgress > 0.95 ? 'pan-y' : 'none',
+          WebkitOverflowScrolling: 'touch',
+          touchAction: compactViewport || fsProgress > 0.95 ? 'pan-y' : 'none',
           paddingBottom: showMapCta ? 96 : 0,
         }}
       >
@@ -1957,6 +1958,7 @@ function App() {
           snapIndex={snap} setSnapIndex={setSnap} snaps={SNAPS}
           onTopChange={setSheetTop}
           showMapCta={snap === 0}
+          compactViewport={compactViewport}
         >
           {snap === 2 ? (
             <div style={{
