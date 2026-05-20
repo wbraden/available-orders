@@ -1304,15 +1304,8 @@ function SideDrawer({ open, onClose, name, compact = false }) {
 // Filter sheet (slides from bottom)
 // ─────────────────────────────────────────────────────────────
 function FilterSheet({ open, onClose, filters, setFilters }) {
-  const FILTER_BLACK = '#212121';
-  const [sortBy, setSortBy] = useState('zone');
-  const [orderLabels, setOrderLabels] = useState([]);
-  const [retailers, setRetailers] = useState([]);
-  const hasActiveFilters = orderLabels.length > 0 || retailers.length > 0;
-
-  const togglePill = (value, list, setList) => {
-    setList(list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
-  };
+  const toggle = (key) => setFilters({ ...filters, [key]: !filters[key] });
+  const clearFilters = () => setFilters({ promo: false, hourly: false, batch: false, drinks: false });
 
   return (
     <>
@@ -1330,149 +1323,44 @@ function FilterSheet({ open, onClose, filters, setFilters }) {
         transition: 'transform 0.4s cubic-bezier(0.22,1,0.36,1)',
         boxShadow: `0 -8px 24px ${C.shadow}`,
         fontFamily: FONT,
-        paddingBottom: 26,
+        paddingBottom: 34,
       }}>
-        <div style={{ paddingTop: 10, display: 'flex', justifyContent: 'center' }}>
-          <div style={{ width: 47, height: 4, borderRadius: 99, background: 'rgb(173,171,176)' }} />
+        <div style={{
+          padding: '16px 16px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <button onClick={onClose} style={iconBtn}><IconClose color={C.ink} /></button>
+          <span style={{ fontSize: 16, fontWeight: 600, color: C.ink }}>Filters</span>
+          <button onClick={clearFilters} style={{
+            ...iconBtn, width: 'auto', padding: '0 4px',
+            fontSize: 14, color: '#212121', fontWeight: 600,
+          }}>Clear</button>
         </div>
-        <div style={{ padding: '16px 16px 12px' }}>
-          <div style={{ fontSize: 24, lineHeight: '28px', fontWeight: 700, color: C.ink, letterSpacing: -0.2 }}>All filters</div>
-        </div>
-        <div style={{ padding: '0 16px 18px' }}>
-          <SectionTitle>Sort by</SectionTitle>
-          <RadioRow label="Zone (default)" checked={sortBy === 'zone'} onClick={() => setSortBy('zone')} />
-          <div style={{ height: 1, background: 'rgb(229,227,231)', margin: '0 0 0 0' }} />
-          <RadioRow label="Delivery window" checked={sortBy === 'delivery-window'} onClick={() => setSortBy('delivery-window')} />
-        </div>
-        <div style={{ padding: '0 16px 18px' }}>
-          <SectionTitle>Order label</SectionTitle>
-          <ChipGrid>
-            {[
-              ['delivery-only', 'Delivery only'],
-              ['drop-off', 'Drop-off'],
-              ['early-ok', 'Early OK'],
-              ['id-scan', 'ID scan'],
-              ['prepaid', 'Prepaid'],
-            ].map(([value, label]) => (
-              <Chip key={value} label={label} active={orderLabels.includes(value)} onClick={() => togglePill(value, orderLabels, setOrderLabels)} />
-            ))}
-          </ChipGrid>
-        </div>
-        <div style={{ padding: '0 16px 20px' }}>
-          <SectionTitle>Retailer</SectionTitle>
-          <ChipGrid>
-            {[
-              ['abc', 'ABC'],
-              ['costco-wholesale', 'Costco Wholesale'],
-              ['kroger', 'Kroger'],
-              ['meijer', 'Meijer'],
-              ['piggly-wiggly', 'Piggly Wiggly'],
-              ['target', 'Target'],
-            ].map(([value, label]) => (
-              <Chip key={value} label={label} active={retailers.includes(value)} onClick={() => togglePill(value, retailers, setRetailers)} />
-            ))}
-          </ChipGrid>
-        </div>
-        <div style={{ padding: '8px 16px 0', display: 'flex', gap: 12 }}>
-          <button
-            onClick={() => {
-              setSortBy('zone');
-              setOrderLabels([]);
-              setRetailers([]);
-            }}
-            style={{
-              flex: 1,
-              height: 50,
-              borderRadius: 10,
-              border: '1px solid rgb(227,225,229)',
-              background: C.surface,
-              color: hasActiveFilters ? C.ink : 'rgb(206,204,208)',
-              fontFamily: FONT,
-              fontSize: 16,
-              fontWeight: 700,
-              cursor: hasActiveFilters ? 'pointer' : 'default',
-            }}
-          >
-            Clear filters
-          </button>
-          <button
-            onClick={onClose}
-            style={{
-              flex: 1.15,
-              height: 50,
-              borderRadius: 10,
-              border: 'none',
-              background: FILTER_BLACK,
-              color: C.surface,
-              fontFamily: FONT,
-              fontSize: 16,
-              fontWeight: 700,
+        <div style={{ padding: '8px 0 16px' }}>
+          {[
+            ['promo',  'Promo orders only'],
+            ['hourly', 'Hourly windows'],
+            ['batch',  'Batch deliveries'],
+            ['drinks', 'No alcohol orders'],
+          ].map(([key, label], i, arr) => (
+            <label key={key} style={{
+              display: 'flex', alignItems: 'center', padding: '16px 20px',
+              borderBottom: i === arr.length - 1 ? 'none' : `0.5px solid ${C.hairline}`,
               cursor: 'pointer',
-            }}
-          >
-            View orders
-          </button>
+            }}>
+              <span style={{ flex: 1, fontSize: 16, color: C.ink }}>{label}</span>
+              <Switch on={filters[key]} onChange={() => toggle(key)} />
+            </label>
+          ))}
+        </div>
+        <div style={{ padding: '8px 16px 0' }}>
+          <button onClick={onClose} style={{
+            width: '100%', padding: '14px 0', borderRadius: 99,
+            background: '#212121', color: C.surface,
+            fontFamily: FONT, fontSize: 16, fontWeight: 600, border: 'none', cursor: 'pointer',
+          }}>Apply filters</button>
         </div>
       </div>
     </>
-  );
-}
-
-function SectionTitle({ children }) {
-  return <div style={{ margin: '4px 0 14px', fontSize: 16, lineHeight: '20px', fontWeight: 700, color: C.ink }}>{children}</div>;
-}
-
-function RadioRow({ label, checked, onClick }) {
-  return (
-    <button onClick={onClick} style={{
-      width: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 12,
-      padding: '14px 0',
-      background: 'transparent',
-      border: 'none',
-      cursor: 'pointer',
-      fontFamily: FONT,
-      textAlign: 'left',
-    }}>
-      <div style={{
-        width: 24,
-        height: 24,
-        borderRadius: '50%',
-        border: `2px solid ${checked ? '#212121' : 'rgb(173,171,176)'}`,
-        position: 'relative',
-        flexShrink: 0,
-      }}>
-        {checked && <div style={{ position: 'absolute', inset: 4, borderRadius: '50%', background: '#212121' }} />}
-      </div>
-      <div style={{ fontSize: 16, lineHeight: '20px', color: C.ink }}>{label}</div>
-    </button>
-  );
-}
-
-function ChipGrid({ children }) {
-  return <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>{children}</div>;
-}
-
-function Chip({ label, active, onClick }) {
-  return (
-    <button onClick={onClick} type="button" style={{
-      height: 38,
-      padding: '0 16px',
-      borderRadius: 999,
-      border: `1px solid ${active ? '#212121' : 'rgb(173,171,176)'}`,
-      background: active ? '#212121' : C.surface,
-      color: active ? C.surface : C.ink,
-      cursor: 'pointer',
-      fontFamily: FONT,
-      fontSize: 16,
-      lineHeight: '16px',
-      fontWeight: 600,
-      whiteSpace: 'nowrap',
-    }}>
-      {label}
-    </button>
   );
 }
 
