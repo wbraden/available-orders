@@ -85,11 +85,11 @@
       const W = 375, H = 812;
       const pad = 40;
       const vw = Math.max(320, window.innerWidth);
-      const vh = Math.max(480, window.innerHeight);
+      const vh = Math.max(480, window.visualViewport?.height || window.innerHeight);
       if (vw < 400) {
         el.style.transform = 'none';
         el.style.width = '100vw';
-        el.style.height = '100vh';
+        el.style.height = `${vh}px`;
         el.style.maxWidth = 'none';
         el.style.maxHeight = 'none';
         return;

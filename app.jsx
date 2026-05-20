@@ -76,7 +76,7 @@ const IconClose = ({ size = 24, color = C.inkMuted }) => (
 // ─────────────────────────────────────────────────────────────
 // iOS status bar (light variant)
 // ─────────────────────────────────────────────────────────────
-const StatusBar = () => (
+const StatusBar = ({ compact = false }) => compact ? null : (
   <div style={{
     position: 'absolute', top: 0, left: 0, right: 0, height: 44, zIndex: 60,
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -106,7 +106,7 @@ const StatusBar = () => (
   </div>
 );
 
-const HomeIndicator = () => (
+const HomeIndicator = ({ compact = false }) => compact ? null : (
   <div style={{
     position: 'absolute', bottom: 0, left: 0, right: 0, height: 34, zIndex: 60,
     display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 8,
@@ -578,7 +578,7 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
 // The expanding header pill
 // state: 'pill' | 'menu'
 // ─────────────────────────────────────────────────────────────
-function HeaderPill({ open, onToggle, stats, online = true, setOnline = () => {} }) {
+function HeaderPill({ open, onToggle, stats, online = true, setOnline = () => {}, compact = false }) {
   // pill size
   const pillW = 243;
   const pillH = 56;
@@ -589,7 +589,7 @@ function HeaderPill({ open, onToggle, stats, online = true, setOnline = () => {}
   const W = open ? cardW : pillW;
   const H = open ? cardH : pillH;
   const L = (375 - W) / 2;
-  const T = open ? 50 : 44;
+  const T = compact ? (open ? 16 : 12) : (open ? 50 : 44);
   const R = open ? 24 : 99;
 
   return (
@@ -1178,7 +1178,7 @@ const iconBtn = {
 // ─────────────────────────────────────────────────────────────
 // Side nav drawer (slides from left)
 // ─────────────────────────────────────────────────────────────
-function SideDrawer({ open, onClose, name }) {
+function SideDrawer({ open, onClose, name, compact = false }) {
   const W = 300;
   return (
     <>
@@ -1197,7 +1197,7 @@ function SideDrawer({ open, onClose, name }) {
         display: 'flex', flexDirection: 'column',
         fontFamily: FONT,
       }}>
-        <div style={{ height: 44 }} />{/* status bar spacer */}
+        <div style={{ height: compact ? 0 : 44 }} />{/* status bar spacer */}
         <div style={{ padding: '16px 20px 24px', borderBottom: `0.5px solid ${C.hairline}` }}>
           <div style={{
             width: 56, height: 56, borderRadius: '50%',
@@ -1829,14 +1829,14 @@ function App() {
     setTimeout(() => {
       setConnecting(false);
       setOnline(true);
-      setSnap(2); // start sheet at peek
+      setSnap(compactViewport ? 1 : 2); // start sheet more open on compact phones
       window.__driverMapRecenter?.();
     }, 1400);
   };
 
   const goOffline = () => {
     setOnline(false);
-    setSnap(2);
+    setSnap(compactViewport ? 1 : 2);
   };
 
   // Sheet snap points (top distance from frame top)
@@ -1900,7 +1900,7 @@ function App() {
 
       {/* CHROME — solidifies as sheet pulls fullscreen, hides when menu open */}
       {!headerOpen && <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: 116, zIndex: 35,
+        position: 'absolute', top: 0, left: 0, right: 0, height: compactViewport ? 72 : 116, zIndex: 35,
         background: fs >= 1
           ? 'rgb(255,255,255)'
           : `rgba(255,255,255,${0.7 + 0.3 * fs})`,
@@ -1910,27 +1910,31 @@ function App() {
         pointerEvents: 'none',
         transition: 'background 0.2s ease, border-bottom 0.2s ease',
       }} />}
-      <StatusBar />
+      <StatusBar compact={compactViewport} />
       {/* nav buttons */}
       <button onClick={() => setDrawerOpen(true)} style={{
-        position: 'absolute', left: 16, top: 60, width: 24, height: 24, zIndex: 50,
+        position: 'absolute', left: 16, top: compactViewport ? 16 : 60, width: 24, height: 24, zIndex: 50,
         background: 'transparent', border: 'none', cursor: 'pointer', padding: 0,
       }}>
         <IconHamburger />
       </button>
       <button onClick={() => setFilterOpen(true)} style={{
-        position: 'absolute', right: 16, top: 60, width: 24, height: 24, zIndex: 50,
+        position: 'absolute', right: 16, top: compactViewport ? 16 : 60, width: 24, height: 24, zIndex: 50,
         background: 'transparent', border: 'none', cursor: 'pointer', padding: 0,
       }}>
         <IconFilter />
       </button>
 
       {/* HEADER PILL / MENU */}
-      <HeaderPill open={headerOpen} onToggle={() => setHeaderOpen(o => !o)} stats={stats} online={online} setOnline={setOnline} />
+      <HeaderPill open={headerOpen} onToggle={() => setHeaderOpen(o => !o)} stats={stats} online={online} setOnline={setOnline} compact={compactViewport} />
 
       {/* BOTTOM SHEET — always mounted, slides in/out */}
       <div style={{
-        position: 'absolute', inset: 0, zIndex: 20,
+        position: compactViewport ? 'fixed' : 'absolute',
+        inset: 0,
+        width: compactViewport ? '100vw' : 'auto',
+        height: compactViewport ? '100dvh' : 'auto',
+        zIndex: 20,
         transform: online ? 'translateY(0)' : 'translateY(110%)',
         transition: online
           ? 'transform 0.55s cubic-bezier(0.22,1,0.36,1)'
@@ -1997,7 +2001,7 @@ function App() {
           style={{
             position: 'absolute',
             left: '50%',
-            bottom: 48,
+            bottom: compactViewport ? 16 : 48,
             transform: 'translateX(-50%)',
             minWidth: 44,
             minHeight: 44,
@@ -2022,9 +2026,11 @@ function App() {
       {/* GO ONLINE CTA — only when offline */}
       {!online && (
         <div style={{
-          position: 'absolute', left: 0, right: 0, bottom: 0,
-          padding: '12px 12px 56px', zIndex: 25,
-          transform: 'translateY(32px)',
+          position: compactViewport ? 'fixed' : 'absolute',
+          left: 0, right: 0, bottom: 0,
+          padding: compactViewport ? '12px 12px max(16px, env(safe-area-inset-bottom))' : '12px 12px 56px', zIndex: 25,
+          bottom: compactViewport ? 22 : 0,
+          transform: compactViewport ? 'none' : 'translateY(32px)',
           fontFamily: FONT,
         }}>
           {/* blur bg — starts halfway down the card */}
@@ -2086,7 +2092,7 @@ function App() {
         style={{
           position: 'absolute',
           right: 16,
-          top: 132,
+          top: compactViewport ? 88 : 132,
           width: 44, height: 44, borderRadius: '50%',
           background: C.surface, border: 'none', cursor: 'pointer',
           boxShadow: `0 4px 12px ${C.shadow}`,
@@ -2110,13 +2116,13 @@ function App() {
       </button>
 
       {/* HOME INDICATOR */}
-      <HomeIndicator />
+      <HomeIndicator compact={compactViewport} />
 
       {/* STORE SHEET */}
       <StoreSheet store={selectedStore} onClose={() => setSelectedStore(null)} sheetRef={storeSheetRef} />
 
       {/* OVERLAYS */}
-      <SideDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} name="Alex Reyes" />
+      <SideDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} name="Alex Reyes" compact={compactViewport} />
       <FilterSheet open={filterOpen} onClose={() => setFilterOpen(false)} filters={filters} setFilters={setFilters} />
     </div>
     {window.TweaksPanel && (
