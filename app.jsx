@@ -73,6 +73,50 @@ const IconClose = ({ size = 24, color = C.inkMuted }) => (
   </svg>
 );
 
+const LoadingIndicator = ({ size = 'md', surface = 'default' }) => {
+  const sizePx = size === 'sm' ? 16 : size === 'lg' ? 24 : size === 'xl' ? 40 : 20;
+  const rem = sizePx / 16;
+  const dot = rem / 2.5;
+  const travel = rem - dot;
+  const color = surface === 'inverse' ? '#fff' : C.ink;
+  return (
+    <div style={{
+      boxSizing: 'border-box',
+      position: 'relative',
+      width: `${rem}rem`,
+      height: `${rem}rem`,
+      flexShrink: 0,
+    }}>
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} style={{
+          boxSizing: 'border-box',
+          position: 'absolute',
+          inset: 0,
+          opacity: [1, 0.7, 0.5, 0.3][i],
+          transform: `rotate(${i * 90}deg)`,
+        }}>
+          <div style={{
+            position: 'absolute',
+            width: `${dot}rem`,
+            height: `${dot}rem`,
+            borderRadius: '50%',
+            left: 0,
+            top: 0,
+            backgroundColor: color,
+            animationName: 'loadingIndicatorSlide',
+            animationDuration: '3s',
+            animationIterationCount: 'infinite',
+            animationTimingFunction: 'ease-in-out',
+            animationDelay: '-525ms',
+            animationFillMode: 'both',
+            ['--loading-indicator-travel']: `${travel}rem`,
+          }} />
+        </div>
+      ))}
+    </div>
+  );
+};
+
 // ─────────────────────────────────────────────────────────────
 // iOS status bar (light variant)
 // ─────────────────────────────────────────────────────────────
@@ -299,10 +343,12 @@ function buildStoreIcon(store, norm, online, selected = false, animClass = '', d
   });
 }
 
-function MapView({ online = false, onStoreTap, selectedStore }) {
+function MapView({ online = false, onStoreTap, selectedStore, onMapInteract }) {
   const onStoreTapRef = useRef(onStoreTap);
   const selectedStoreRef = useRef(selectedStore);
+  const onMapInteractRef = useRef(onMapInteract);
   useEffect(() => { onStoreTapRef.current = onStoreTap; }, [onStoreTap]);
+  useEffect(() => { onMapInteractRef.current = onMapInteract; }, [onMapInteract]);
 
   // Update icons when selection changes
   useEffect(() => {
@@ -488,6 +534,18 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
       pane: 'userPane',
     }).addTo(m);
 
+    const dismissSelectedStore = (e) => {
+      if (!selectedStoreRef.current) return;
+      if (e?.originalEvent && e?.type === 'dragstart') {
+        onMapInteractRef.current?.();
+        return;
+      }
+      if (e?.type === 'click') onMapInteractRef.current?.();
+    };
+    m.on('dragstart', dismissSelectedStore);
+    m.on('zoomstart', dismissSelectedStore);
+    m.on('click', dismissSelectedStore);
+
     mapRef.current = m;
 
     const invalidate = () => m.invalidateSize();
@@ -509,6 +567,9 @@ function MapView({ online = false, onStoreTap, selectedStore }) {
     };
 
     return () => {
+      m.off('dragstart', dismissSelectedStore);
+      m.off('zoomstart', dismissSelectedStore);
+      m.off('click', dismissSelectedStore);
       ro.disconnect();
       m.remove();
       mapRef.current = null;
@@ -1535,24 +1596,38 @@ const BRAND_LOGOS = {
 
 function BrandLogo({ brand, size = 40 }) {
   const logoSrc = BRAND_LOGOS[brand];
+  const avatarStyle = {
+    width: size,
+    height: size,
+    borderRadius: 8,
+    overflow: 'hidden',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    background: BRAND_COLORS[brand] || C.hairline,
+  };
+
   if (logoSrc) {
     return (
-      <img
-        src={logoSrc}
-        alt=""
-        aria-hidden="true"
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          display: 'block',
-        }}
-      />
+      <div style={avatarStyle}>
+        <img
+          src={logoSrc}
+          alt=""
+          aria-hidden="true"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            display: 'block',
+          }}
+        />
+      </div>
     );
   }
 
   if (!brand) {
-    return <div style={{ width: size * 1.4, height: size, borderRadius: 12, background: C.hairline }} />;
+    return <div style={{ ...avatarStyle, background: C.hairline }} />;
   }
 
   const label = {
@@ -1575,19 +1650,14 @@ function BrandLogo({ brand, size = 40 }) {
 
   return (
     <div style={{
-      width: size * 1.4,
-      height: size,
-      borderRadius: 12,
-      background: color,
+      ...avatarStyle,
       color: '#fff',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
       fontSize: brand === 'office' ? 8 : 12,
       fontWeight: 700,
       letterSpacing: 0.1,
       textAlign: 'center',
-      padding: '0 6px',
+      padding: '0 4px',
+      background: color,
     }}>
       {short}
     </div>
@@ -1640,7 +1710,7 @@ function OrderCard({ order }) {
       )}
       <div style={{ position: 'relative', padding: '16px' }}>
         <div style={{ position: 'absolute', right: 16, top: 16, width: 60, height: 40, display: 'flex', justifyContent: 'flex-end' }}>
-          <BrandLogo brand={order.storeBrand} />
+          <BrandLogo brand={order.storeBrand} size={40} />
         </div>
         <div style={{ color: '#177cba', fontSize: 14, fontWeight: 600, lineHeight: '18px', marginBottom: 4 }}>Shop &amp; deliver</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
@@ -1704,12 +1774,6 @@ function StoreSheet({ store, onClose, sheetRef }) {
 
   return (
     <>
-      {/* tap-outside dismiss (invisible) */}
-      <div onClick={onClose} style={{
-        position: 'absolute', inset: 0, zIndex: 44,
-        pointerEvents: open ? 'auto' : 'none',
-      }} />
-
       {/* sheet */}
       <div ref={sheetRef} style={{
         position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 45,
@@ -1737,12 +1801,7 @@ function StoreSheet({ store, onClose, sheetRef }) {
 
         {/* store header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '8px 16px 16px' }}>
-          <div style={{
-            width: 60, height: 40, flexShrink: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <BrandLogo brand={store?.brand} />
-          </div>
+          <BrandLogo brand={store?.brand} size={40} />
           <div>
             <div style={{ fontSize: 18, fontWeight: 600, color: C.ink, lineHeight: '24px' }}>{store?.name}</div>
             <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 2 }}>{store?.address}</div>
@@ -1883,6 +1942,15 @@ function App() {
 
   return (
     <>
+      <style>{`
+        @keyframes loadingIndicatorSlide {
+          0%, 10% { transform: translate(0, 0); }
+          25%, 35% { transform: translate(var(--loading-indicator-travel), 0); }
+          50%, 60% { transform: translate(var(--loading-indicator-travel), var(--loading-indicator-travel)); }
+          75%, 85% { transform: translate(0, var(--loading-indicator-travel)); }
+          100% { transform: translate(0, 0); }
+        }
+      `}</style>
     <div style={{
       width: '100%',
       height: '100%',
@@ -1900,7 +1968,12 @@ function App() {
         pointerEvents: fs > 0.9 ? 'none' : 'auto',
         zIndex: 0,
       }}>
-        <MapView online={online} onStoreTap={handleStoreTap} selectedStore={selectedStore} />
+        <MapView
+          online={online}
+          onStoreTap={handleStoreTap}
+          selectedStore={selectedStore}
+          onMapInteract={() => setSelectedStore(null)}
+        />
       </div>
 
       {/* Backdrop scrim when header menu open */}
@@ -2084,12 +2157,7 @@ function App() {
                 opacity: connecting ? 0.8 : 1,
               }}
             >
-              {connecting && (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ animation: 'spin 0.8s linear infinite', flexShrink: 0 }}>
-                  <circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5" />
-                  <path d="M12 3a9 9 0 0 1 9 9" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
-                </svg>
-              )}
+              {connecting && <LoadingIndicator size="sm" surface="inverse" />}
               {lowDemand ? 'Go online — low demand' : connecting ? 'Going online…' : 'Go online'}
             </button>
           </div>
