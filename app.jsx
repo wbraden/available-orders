@@ -1962,10 +1962,6 @@ function App() {
         >
           {snap === 2 ? (
             <div style={{
-              minHeight: '100%',
-              display: 'flex',
-              alignItems: 'flex-start',
-              justifyContent: 'center',
               paddingTop: 10,
             }}>
               <div style={{
@@ -1979,6 +1975,20 @@ function App() {
                 letterSpacing: -0.2,
               }}>
                 {ORDERS.length} orders available
+              </div>
+              <OrderCards />
+              <div style={{ padding: '24px 16px 40px', display: 'flex' }}>
+                <button
+                  data-no-drag="true"
+                  onClick={goOffline}
+                  style={{
+                    width: '100%', padding: '14px 0', borderRadius: 99,
+                    background: 'transparent', color: C.ink,
+                    border: '2px solid #212121',
+                    fontFamily: FONT, fontSize: 16, fontWeight: 600,
+                    cursor: 'pointer', letterSpacing: 0.1,
+                  }}
+                >Go offline</button>
               </div>
             </div>
           ) : (
